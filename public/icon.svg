@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="64" height="64" viewBox="0 0 64 64">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #fcfcfc;
+        stroke: #fff;
+        stroke-width: 1px;
+        filter: url(#filter);
+      }
+    </style>
+    <filter id="filter" x="0" y="0" width="64" height="64" filterUnits="userSpaceOnUse">
+      <feFlood result="flood" flood-color="#f89937"/>
+      <feComposite result="composite" operator="in" in2="SourceGraphic"/>
+      <feBlend result="blend" in2="SourceGraphic"/>
+    </filter>
+    <image id="image" width="52" height="18" xlink:href="data:img/png;base64,iVBORw0KGgoAAAANSUhEUgAAADQAAAASCAYAAAAUjf3AAAAEaUlEQVRIiZWXbWiWZRTHf9NnurlZTjRZZE5X9mKlZflBCXqHCKSwUqL8JBgUUhFFEIQUBX7oRSkELT9WoCRY0YfyJc2FlhBFQlpOp+ay5ktzczb9x7H/TddzeW+tP1w893Nf5zrXeT/nrpFECeYA9wMjgBrgCLAG+DUhHQ7MBB4BhvndWGAH8C7QA9xgXpcBY4B6oGL600AnsMtngvdfJbLE/bVAE3ArcAfQCkw0nw5gD7AV2E4olK2KpHWS+vUPzkr6RNLohK5B0nxJPfoX3ZK2SrrHPOol7dbQcFDSC5LGZbLUSrpa0suS2i3LQIj755YpFAx2JYdOSFqS7I+X9JSkPu+fk3RU0nJJLQnd9OziU5I6JO2VtM98U4QBF1uJOD9C0l2StviOAr9LOuD1m6TT3n8njFgpcfHNwITk/wlgo5/DzYuAJQ7Hc8A+YLVDsjM591jGN3isBY4DdcB1wKNASxLC84EPgJPANcBSYLb3490WYDNw1O+aTDceeB3ozb1TJ+kta11go0NoiqQ3baECOyU95BBM+dTbEwX+lLRIUk0Wtq9lXtohaYy9E3KkWJVFQLEuktRceDb30OXAtcBI/5cTPJL6ReABJ3dgA7AM2Fbi5VuAycn/duBn8ysgezhFG3AGaAAezPYOJ55JcdLLEldrO0/S/sQq7bbKGied/LtC0lUl1irWsszyH0qakNHMNP8CxyTdKWmYpEtKCkDkzBuS5pim9O483F5KqpscUp9l1WylpIlZ+OR8vs8EfTYRosFh+lOW7GGEi00zStKmTCElhSWq7sKs8l6gUKuk9RmD/hJLfSrp0kG8c1uWZyHE15LetyCRW70Zz3W+P+UzQ9IPJUrJMkWkrJV05UAKRf84VHKwJ7NkPM8eRKFXM4+WIXickXTYPSYPx2K1uBDtT8pzjrcljc0VGinpiYwwhNos6WFJe7K9Fa5EZRVnW2aQCLkjXofcg4LvK86jgQyTrsmSnnR/7MtkiXezcoWanbgp3pPUKKnJzyk6fSa/+O5M+Qi9511s5jkKprkNDEWRfMWdbZksbalhigM32v0FjkuamowfC0ss83h2WST9UvecAt+U9Kj/WnWD7I92DqcRsNJVkaIPVTxkNmf9oMvPMTD+COx1jyqwGFgFnPX/GEynuYfgHvMVcKqkdwyE6F/3Ad/5vug7fZ5KJgFzPaAWCJqP0/5UcRO9N7vg80yQjvOTbLVCMbrMsvJYmVZPx1jRDf9DmUbgGU/5B72OudHW2uDTgVGmj0a7HPiyqmFLmuTELRCD5u1Zn6l4cOzOwm696YZLes4lOs2fxiGGWfB4WlKXhobtkhZ4TKriVbELKw6xsO4XwC/ZmNKffLfMSPZuAqYA3cAVpuvyd8pqvx8Kgv4PYCdwfRb+xf3hkW+BjzygxiAc3qtCWGacFSlyIT68ejOFAjENh7vD/efP2hDxIRdxHiETgsW5+I0p/YILB0HwDX6RL1M9P0Y6ROhHyB+wXMGzkLUawN/akkO2jqhv4AAAAABJRU5ErkJggg=="/>
+  </defs>
+  <g style="fill: #fcfcfc; filter: url(#filter)">
+    <rect id="rect" class="cls-1" width="64" height="64" rx="14" ry="14" style="stroke: inherit; filter: none; fill: inherit"/>
+  </g>
+  <use xlink:href="#rect" style="stroke: #fff; filter: none; fill: none"/>
+  <use id="logo" x="6" y="23" xlink:href="#image"/>
+  <use id="logo_copy" data-name="logo copy" x="6" y="23" xlink:href="#image"/>
+  <use id="logo_copy_2" data-name="logo copy 2" x="6" y="23" xlink:href="#image"/>
+</svg>
