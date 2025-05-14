@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { toast } from "sonner";
-import { AlertCircle, FileDown, LoaderCircle } from "lucide-react";
+import { AlertCircle, Download, LoaderCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface Report {
@@ -107,6 +107,7 @@ const Reports = () => {
       a.click();
       a.remove();
       window.URL.revokeObjectURL(url);
+      toast("Report downloaded successfully.");
     } catch (error) {
       console.error("Error downloading report:", error);
       toast("Error downloading report. Please try again.");
@@ -139,7 +140,7 @@ const Reports = () => {
         </div>
       )}
 
-      {loading && (
+      {loading && reports.length !== 0 && (
         <div className="fixed bottom-28 left-1/2 -translate-x-1/2 z-40 flex items-center bg-white border border-gray-200 shadow-md rounded-full px-4 py-2">
           <LoaderCircle className="w-5 h-5 text-gray-600 animate-spin mr-2" />
           <span className="text-sm text-gray-700">Loading...</span>
@@ -158,7 +159,7 @@ const Reports = () => {
                 {report.client_name.toString().slice(0, 1)}
               </div>
               <div className="flex-1 ml-4">
-                <p className="text-lg font-medium text-gray-800 dark:text-white">
+                <p className=" text-gray-800 dark:text-white">
                   Report ID: {report.report_id}
                 </p>
                 <p className="text-sm text-gray-500">
@@ -174,10 +175,10 @@ const Reports = () => {
               <div className="text-right text-sm text-gray-500">
                 <Button
                   onClick={() => handleDownload(report.report_id)}
-                  variant="default"
-                  className="mt-4 w-full"
+                  variant="outline"
+                  className=""
                 >
-                  Download Report <FileDown className="ml-2" />
+                  Download <Download className="" />
                 </Button>
               </div>
             </li>

@@ -54,8 +54,10 @@ const Station: React.FC<StationProps> = ({ setCounter, reportID }) => {
   const [stationL, setStationL] = useState<string>("");
   const [batchNr, setBatchNr] = useState<string>("");
   const [stations, setStations] = useState<StationsProps[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const getStations = async (reportID: string): Promise<void> => {
+    setLoading(true);
     try {
       const response: Response = await fetch(`/portal_api/get_stations.php`, {
         method: "POST",
@@ -71,6 +73,7 @@ const Station: React.FC<StationProps> = ({ setCounter, reportID }) => {
         const errorText = await response.text();
         console.error("Failed to fetch stations:", errorText);
         toast("Error fetching stations.");
+        setLoading(false);
         return;
       }
 
@@ -92,6 +95,8 @@ const Station: React.FC<StationProps> = ({ setCounter, reportID }) => {
     } catch (error) {
       console.error("Error fetching stations:", error);
       toast("Error fetching stations. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -116,6 +121,8 @@ const Station: React.FC<StationProps> = ({ setCounter, reportID }) => {
       return;
     }
 
+    setLoading(true);
+
     try {
       const response: Response = await fetch("/portal_api/save_station.php", {
         method: "POST",
@@ -138,6 +145,7 @@ const Station: React.FC<StationProps> = ({ setCounter, reportID }) => {
         const errorText = await response.text();
         console.error("Failed to save station data:", errorText);
         toast("Error saving station data.");
+        setLoading(false);
         return;
       }
 
@@ -170,10 +178,14 @@ const Station: React.FC<StationProps> = ({ setCounter, reportID }) => {
     } catch (error) {
       console.error("Error saving station data:", error);
       toast("Error saving station data. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
   const deleteStation = async (id: number): Promise<void> => {
+    if (loading) return; // Prevent multiple clicks while loading
+    setLoading(true);
     try {
       const response: Response = await fetch("/portal_api/delete_station.php", {
         method: "POST",
@@ -189,6 +201,7 @@ const Station: React.FC<StationProps> = ({ setCounter, reportID }) => {
         const errorText = await response.text();
         console.error("Failed to delete station:", errorText);
         toast("Error deleting station data.");
+        setLoading(false);
         return;
       }
 
@@ -212,6 +225,8 @@ const Station: React.FC<StationProps> = ({ setCounter, reportID }) => {
     } catch (error) {
       console.error("Error saving station data:", error);
       toast("Error saving station data. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 

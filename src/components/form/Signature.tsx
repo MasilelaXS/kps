@@ -1,6 +1,6 @@
 import ReactSignatureCanvas from "react-signature-canvas";
-import { useRef } from "react";
-import { Save } from "lucide-react";
+import { useRef, useState } from "react";
+import { LoaderCircle, Save } from "lucide-react";
 import { Button } from "../ui/button";
 import { toast } from "sonner";
 
@@ -18,6 +18,7 @@ const ClientSignature: React.FC<SignatureProps> = ({
   setCounter,
   reportID,
 }) => {
+  const [loading, setLoading] = useState<boolean>(false);
   const sigCanvasRef = useRef<ReactSignatureCanvas | null>(null);
 
   const handleClear = (): void => {
@@ -31,6 +32,8 @@ const ClientSignature: React.FC<SignatureProps> = ({
       toast("Please provide a signature before saving.");
       return;
     }
+
+    setLoading(true);
 
     try {
       const dataUrl: string = canvas.getCanvas().toDataURL("image/png");
@@ -51,6 +54,7 @@ const ClientSignature: React.FC<SignatureProps> = ({
 
       if (!response.ok) {
         const message: string = await response.text();
+        setLoading(false);
         throw new Error(message);
       }
 
@@ -72,11 +76,19 @@ const ClientSignature: React.FC<SignatureProps> = ({
         console.error("Unknown error saving signature:", err);
         toast("Failed to save signature. Please try again.");
       }
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200 w-full h-full py-12">
+      {loading && (
+        <div className="fixed bottom-28 left-1/2 -translate-x-1/2 z-40 flex items-center bg-white border border-gray-200 shadow-md rounded-full px-4 py-2">
+          <LoaderCircle className="w-5 h-5 text-gray-600 animate-spin mr-2" />
+          <span className="text-sm text-gray-700">Loading...</span>
+        </div>
+      )}
       <div className="w-full h-full flex flex-col justify-center items-center">
         <h1 className="flex justify-between w-full px-4 py-6">
           <div className="flex items-center text-left">

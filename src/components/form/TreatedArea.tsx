@@ -1,4 +1,4 @@
-import { ArrowRight, BugOff } from "lucide-react";
+import { ArrowRight, BugOff, LoaderCircle } from "lucide-react";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Button } from "../ui/button";
@@ -30,6 +30,7 @@ const TreatedArea: React.FC<TreatedAreaProps> = ({ setCounter, reportID }) => {
   const [isLiquidReplaced, setIsLiquidReplaced] = useState<boolean>(false);
   const [attention, setAttention] = useState<string>("");
   const [remark, setRemark] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
 
   const handleAreaChange = (value: string) => {
     setArea(value);
@@ -62,6 +63,8 @@ const TreatedArea: React.FC<TreatedAreaProps> = ({ setCounter, reportID }) => {
       return;
     }
 
+    setLoading(true);
+
     try {
       const response: Response = await fetch("/portal_api/save_treatment.php", {
         method: "POST",
@@ -85,6 +88,7 @@ const TreatedArea: React.FC<TreatedAreaProps> = ({ setCounter, reportID }) => {
         const errorText = await response.text();
         console.error("Failed to save treatment data:", errorText);
         toast("Error saving treatment data.");
+        setLoading(false);
         return;
       }
 
@@ -106,6 +110,8 @@ const TreatedArea: React.FC<TreatedAreaProps> = ({ setCounter, reportID }) => {
     } catch (error) {
       console.error("Error saving treatment data:", error);
       toast("Error saving treatment data. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -124,6 +130,12 @@ const TreatedArea: React.FC<TreatedAreaProps> = ({ setCounter, reportID }) => {
 
   return (
     <div className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200">
+      {loading && (
+        <div className="fixed bottom-28 left-1/2 -translate-x-1/2 z-40 flex items-center bg-white border border-gray-200 shadow-md rounded-full px-4 py-2">
+          <LoaderCircle className="w-5 h-5 text-gray-600 animate-spin mr-2" />
+          <span className="text-sm text-gray-700">Loading...</span>
+        </div>
+      )}
       <div>
         <div className="w-full h-full py-12 ">
           <div className="w-full h-full flex flex-col justify-center items-center">

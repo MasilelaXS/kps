@@ -1,4 +1,10 @@
-import { ArrowLeft, ArrowRight, CalendarIcon, UserRound } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  CalendarIcon,
+  LoaderCircle,
+  UserRound,
+} from "lucide-react";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Button } from "../ui/button";
@@ -30,6 +36,7 @@ const ClientInfo: React.FC<ClientInfoProps> = ({
   const [clientNr, setClientNr] = useState<string>("");
   const [clientAddr, setClientAddr] = useState<string>("");
   const [date, setDate] = useState<Date>();
+  const [loading, setLoading] = useState<boolean>(false);
 
   const handleBack = () => {
     setCounter(1);
@@ -37,6 +44,8 @@ const ClientInfo: React.FC<ClientInfoProps> = ({
 
   const searchClient = async (clientEmail: string): Promise<void> => {
     if (clientEmail.length === 0) return;
+
+    setLoading(true);
 
     const response: Response = await fetch("/portal_api/search_client.php", {
       method: "POST",
@@ -84,6 +93,8 @@ const ClientInfo: React.FC<ClientInfoProps> = ({
       setClientName("");
       setClientNr("");
       setClientAddr("");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -115,6 +126,8 @@ const ClientInfo: React.FC<ClientInfoProps> = ({
     )
       return;
 
+    setLoading(true);
+
     const response: Response = await fetch("/portal_api/save_client.php", {
       method: "POST",
       headers: {
@@ -132,6 +145,7 @@ const ClientInfo: React.FC<ClientInfoProps> = ({
 
     if (!response.ok) {
       console.error("Failed to save client data:", response.statusText);
+      setLoading(false);
       return;
     }
 
@@ -153,11 +167,19 @@ const ClientInfo: React.FC<ClientInfoProps> = ({
       }
     } catch (error) {
       console.error("Error parsing JSON:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200">
+      {loading && (
+        <div className="fixed bottom-28 left-1/2 -translate-x-1/2 z-40 flex items-center bg-white border border-gray-200 shadow-md rounded-full px-4 py-2">
+          <LoaderCircle className="w-5 h-5 text-gray-600 animate-spin mr-2" />
+          <span className="text-sm text-gray-700">Loading...</span>
+        </div>
+      )}
       <div className="w-full h-full py-12 ">
         <div className="w-full h-full flex flex-col justify-center items-center">
           <h1 className="flex justify-between w-full px-4 py-6 ">
