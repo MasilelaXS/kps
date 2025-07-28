@@ -1,0 +1,97 @@
+@import "tailwindcss";
+
+/* Include HeroUI components for scanning */
+@source "../node_modules/@heroui/react/dist/**/*.{js,mjs}";
+@source "../node_modules/@heroui/theme/dist/**/*.{js,mjs}";
+
+/* Custom theme configuration for HeroUI compatibility */
+@theme {
+  --breakpoint-xs: 475px;
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1400px;
+}
+
+/* Modal backdrop and content styling */
+[data-slot="backdrop"] {
+  background: rgba(0, 0, 0, 0.5) !important;
+  backdrop-filter: blur(4px) !important;
+}
+
+[data-slot="wrapper"] {
+  background: rgba(0, 0, 0, 0.5) !important;
+  backdrop-filter: blur(4px) !important;
+}
+
+[data-slot="base"] {
+  background: white !important;
+  border-radius: 12px !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+}
+
+[data-slot="header"] {
+  background: white !important;
+  border-bottom: 1px solid #e5e7eb !important;
+}
+
+[data-slot="body"] {
+  background: white !important;
+}
+
+[data-slot="footer"] {
+  background: white !important;
+  border-top: 1px solid #e5e7eb !important;
+}
+
+/* Additional modal styling fallbacks */
+.modal-backdrop {
+  background: rgba(0, 0, 0, 0.5) !important;
+  backdrop-filter: blur(4px) !important;
+}
+
+.modal-content {
+  background: white !important;
+  border-radius: 12px !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+}
+
+/* HeroUI specific modal styling */
+[role="dialog"] {
+  background: white !important;
+  border-radius: 12px !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+}
+
+[aria-modal="true"] {
+  background: white !important;
+}
+
+/* Tailwind utility classes */
+.bg-white {
+  background-color: rgb(255 255 255) !important;
+}
+
+.bg-black\/50 {
+  background-color: rgba(0, 0, 0, 0.5) !important;
+}
+
+.backdrop-blur {
+  backdrop-filter: blur(8px) !important;
+}
+
+.rounded-xl {
+  border-radius: 0.75rem !important;
+}
+
+/* Custom animations */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+  20%, 40%, 60%, 80% { transform: translateX(4px); }
+}
+
+.animate-shake {
+  animation: shake 0.5s ease-in-out;
+}
