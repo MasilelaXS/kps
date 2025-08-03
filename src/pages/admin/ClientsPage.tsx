@@ -15,7 +15,9 @@ import {
   StickyNote,
   UserPlus,
   MapPin,
-  Mail
+  Mail,
+  X,
+  Phone
 } from 'lucide-react';
 import { 
   Modal, 
@@ -210,6 +212,59 @@ export const ClientsPage: React.FC = () => {
     } finally {
       setIsCreating(false);
     }
+  };
+
+  // Contact management functions
+  const addContactToCreateForm = () => {
+    setCreateForm({
+      ...createForm,
+      contact: [...createForm.contact, { name: '', number: '' }]
+    });
+  };
+
+  const removeContactFromCreateForm = (index: number) => {
+    if (createForm.contact.length > 1) {
+      const newContacts = createForm.contact.filter((_, i) => i !== index);
+      setCreateForm({
+        ...createForm,
+        contact: newContacts
+      });
+    }
+  };
+
+  const updateContactInCreateForm = (index: number, field: 'name' | 'number', value: string) => {
+    const newContacts = [...createForm.contact];
+    newContacts[index] = { ...newContacts[index], [field]: value };
+    setCreateForm({
+      ...createForm,
+      contact: newContacts
+    });
+  };
+
+  const addContactToEditForm = () => {
+    setEditForm({
+      ...editForm,
+      contact: [...editForm.contact, { name: '', number: '' }]
+    });
+  };
+
+  const removeContactFromEditForm = (index: number) => {
+    if (editForm.contact.length > 1) {
+      const newContacts = editForm.contact.filter((_, i) => i !== index);
+      setEditForm({
+        ...editForm,
+        contact: newContacts
+      });
+    }
+  };
+
+  const updateContactInEditForm = (index: number, field: 'name' | 'number', value: string) => {
+    const newContacts = [...editForm.contact];
+    newContacts[index] = { ...newContacts[index], [field]: value };
+    setEditForm({
+      ...editForm,
+      contact: newContacts
+    });
   };
 
   const handleEditClient = (client: Client) => {
@@ -861,18 +916,65 @@ export const ClientsPage: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Contact Person
-                  </label>
-                  <input
-                    type="text"
-                    value={createForm.contact[0]?.name || ''}
-                    onChange={(e) => setCreateForm({
-                      ...createForm, 
-                      contact: [{ ...createForm.contact[0], name: e.target.value }]
-                    })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-0 focus:border-purple-500"
-                  />
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Contact Information
+                    </label>
+                    <button
+                      type="button"
+                      onClick={addContactToCreateForm}
+                      className="flex items-center text-sm text-purple-600 hover:text-purple-700"
+                    >
+                      <Plus className="w-4 h-4 mr-1" />
+                      Add Contact
+                    </button>
+                  </div>
+                  <div className="space-y-3">
+                    {createForm.contact.map((contact, index) => (
+                      <div key={index} className="border border-gray-200 rounded-lg p-3">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium text-gray-600">
+                            Contact {index + 1}
+                          </span>
+                          {createForm.contact.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => removeContactFromCreateForm(index)}
+                              className="text-red-500 hover:text-red-700"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-xs text-gray-500 mb-1">
+                              Contact Name
+                            </label>
+                            <input
+                              type="text"
+                              placeholder="e.g., John Doe"
+                              value={contact.name}
+                              onChange={(e) => updateContactInCreateForm(index, 'name', e.target.value)}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-0 focus:border-purple-500 text-sm"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs text-gray-500 mb-1">
+                              Phone Number
+                            </label>
+                            <input
+                              type="tel"
+                              placeholder="e.g., +27123456789"
+                              value={contact.number}
+                              onChange={(e) => updateContactInCreateForm(index, 'number', e.target.value)}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-0 focus:border-purple-500 text-sm"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -960,18 +1062,65 @@ export const ClientsPage: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Contact Person
-                  </label>
-                  <input
-                    type="text"
-                    value={editForm.contact[0]?.name || ''}
-                    onChange={(e) => setEditForm({
-                      ...editForm, 
-                      contact: [{ ...editForm.contact[0], name: e.target.value }]
-                    })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-0 focus:border-purple-500"
-                  />
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Contact Information
+                    </label>
+                    <button
+                      type="button"
+                      onClick={addContactToEditForm}
+                      className="flex items-center text-sm text-purple-600 hover:text-purple-700"
+                    >
+                      <Plus className="w-4 h-4 mr-1" />
+                      Add Contact
+                    </button>
+                  </div>
+                  <div className="space-y-3">
+                    {editForm.contact.map((contact, index) => (
+                      <div key={index} className="border border-gray-200 rounded-lg p-3">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium text-gray-600">
+                            Contact {index + 1}
+                          </span>
+                          {editForm.contact.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => removeContactFromEditForm(index)}
+                              className="text-red-500 hover:text-red-700"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-xs text-gray-500 mb-1">
+                              Contact Name
+                            </label>
+                            <input
+                              type="text"
+                              placeholder="e.g., John Doe"
+                              value={contact.name}
+                              onChange={(e) => updateContactInEditForm(index, 'name', e.target.value)}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-0 focus:border-purple-500 text-sm"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs text-gray-500 mb-1">
+                              Phone Number
+                            </label>
+                            <input
+                              type="tel"
+                              placeholder="e.g., +27123456789"
+                              value={contact.number}
+                              onChange={(e) => updateContactInEditForm(index, 'number', e.target.value)}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-0 focus:border-purple-500 text-sm"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -1106,16 +1255,39 @@ export const ClientsPage: React.FC = () => {
                   </div>
                 </div>
 
-                {selectedClient.contact && selectedClient.contact.length > 0 && selectedClient.contact[0].name && (
+                {selectedClient.contact && selectedClient.contact.length > 0 && (
                   <div>
-                    <h4 className="font-medium text-gray-900 mb-2">Contact Person</h4>
-                    <div className="bg-gray-50 rounded-lg p-3">
-                      <div className="text-sm">
-                        <span className="font-medium">{selectedClient.contact[0].name}</span>
-                        {selectedClient.contact[0].number && (
-                          <span className="text-gray-600 ml-2">• {selectedClient.contact[0].number}</span>
-                        )}
-                      </div>
+                    <h4 className="font-medium text-gray-900 mb-2">
+                      Contact Information
+                      {selectedClient.contact.length > 1 && (
+                        <span className="text-sm text-gray-500 ml-2">
+                          ({selectedClient.contact.length} contacts)
+                        </span>
+                      )}
+                    </h4>
+                    <div className="space-y-2">
+                      {selectedClient.contact.map((contact, index) => (
+                        <div key={index} className="bg-gray-50 rounded-lg p-3">
+                          <div className="text-sm">
+                            {contact.name && (
+                              <div className="font-medium text-gray-900">
+                                {contact.name}
+                              </div>
+                            )}
+                            {contact.number && (
+                              <div className="text-gray-600 flex items-center mt-1">
+                                <Phone className="w-4 h-4 mr-1" />
+                                {contact.number}
+                              </div>
+                            )}
+                            {!contact.name && !contact.number && (
+                              <div className="text-gray-400 italic">
+                                Contact {index + 1} - No information provided
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}

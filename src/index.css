@@ -95,3 +95,136 @@
 .animate-shake {
   animation: shake 0.5s ease-in-out;
 }
+
+/* Custom Input Styling - Remove shadows and fix layout */
+[data-slot="input-wrapper"] {
+  box-shadow: none !important;
+  border: 1px solid #d1d5db !important;
+  border-radius: 6px !important;
+  background: white !important;
+  transition: all 0.2s ease !important;
+}
+
+[data-slot="input-wrapper"]:hover {
+  border-color: #9ca3af !important;
+}
+
+[data-slot="input-wrapper"][data-focus="true"],
+[data-slot="input-wrapper"][data-focus-visible="true"] {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+  outline: none !important;
+}
+
+[data-slot="input"] {
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+[data-slot="inner-wrapper"] {
+  box-shadow: none !important;
+}
+
+/* Fix label positioning */
+[data-slot="label"] {
+  position: static !important;
+  transform: none !important;
+  color: #374151 !important;
+  font-weight: 500 !important;
+  font-size: 0.875rem !important;
+  margin-bottom: 0.5rem !important;
+  display: block !important;
+  transition: none !important;
+}
+
+/* Textarea specific styling */
+[data-slot="input-wrapper"] textarea {
+  box-shadow: none !important;
+  resize: vertical !important;
+}
+
+/* Select specific styling */
+[data-slot="trigger"] {
+  box-shadow: none !important;
+  border: 1px solid #d1d5db !important;
+  border-radius: 6px !important;
+  background: white !important;
+  transition: all 0.2s ease !important;
+}
+
+[data-slot="trigger"]:hover {
+  border-color: #9ca3af !important;
+}
+
+[data-slot="trigger"][data-focus="true"],
+[data-slot="trigger"][data-focus-visible="true"] {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+  outline: none !important;
+}
+
+/* Admin notes special styling */
+.admin-notes [data-slot="input-wrapper"] {
+  background: #fefce8 !important;
+  border-color: #fde047 !important;
+}
+
+.admin-notes [data-slot="input-wrapper"]:hover {
+  border-color: #facc15 !important;
+}
+
+.admin-notes [data-slot="input-wrapper"][data-focus="true"] {
+  border-color: #eab308 !important;
+  box-shadow: 0 0 0 3px rgba(234, 179, 8, 0.1) !important;
+}
+
+/* Card styling improvements */
+.report-card {
+  border: 1px solid #e5e7eb !important;
+  border-radius: 8px !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1) !important;
+  background: white !important;
+}
+
+/* Button styling improvements */
+[data-slot="base"].group {
+  box-shadow: none !important;
+  transition: all 0.2s ease !important;
+}
+
+[data-slot="base"].group:hover {
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Checkbox styling */
+[data-slot="wrapper"] {
+  box-shadow: none !important;
+}
+
+/* Modal improvements */
+[role="dialog"] {
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+}
+
+/* Remove all unwanted shadows globally */
+.shadow-none-global * {
+  box-shadow: none !important;
+}
+
+/* Form layout improvements */
+.form-section {
+  background: white !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 8px !important;
+  padding: 1.5rem !important;
+  margin-bottom: 1.5rem !important;
+}
+
+.form-section-title {
+  font-size: 1.125rem !important;
+  font-weight: 600 !important;
+  color: #111827 !important;
+  margin-bottom: 1rem !important;
+  padding-bottom: 0.5rem !important;
+  border-bottom: 1px solid #e5e7eb !important;
+}

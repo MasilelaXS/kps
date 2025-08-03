@@ -57,8 +57,8 @@ export default function LoginPage() {
 
   const handleDemoLogin = (demoType: 'pco' | 'admin') => {
     if (demoType === 'pco') {
-      setPcoNumber('12345');
-      setPassword('demo');
+      setPcoNumber('PCO101');
+      setPassword('admin123');
       setIsAdmin(false);
     } else {
       setPcoNumber('admin123');
@@ -82,6 +82,21 @@ export default function LoginPage() {
           <p className="mt-2 text-sm text-gray-600">
             Sign in to your account
           </p>
+          
+          {/* From Dannel Logo */}
+          <div className="mt-4 flex items-center justify-center space-x-2">
+            <span className="text-sm text-gray-400">from</span>
+            <div className="bg-gray-800 rounded-lg px-3 py-2">
+              <img 
+                src="/dannel.svg" 
+                alt="Dannel Logo" 
+                className="h-8 w-auto"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
+            </div>
+          </div>
         </div>
 
         {/* Admin/PCO Toggle */}

@@ -1,65 +1,118 @@
 
-
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { useAuthStore } from './stores/authStore';
-import { isMobileDevice } from './utils/deviceDetection';
-import LoginPage from './pages/LoginPage';
+import { SimplifiedLogin } from './components/SimplifiedLogin';
 import { AdminLayout } from './pages/admin/AdminLayout';
-import PcoApp from './pages/pco/PcoApp';
+import { MobileLayout } from './components/layout/MobileLayout';
+import { MobileReportLayout } from './components/layout/MobileReportLayout';
+import { Dashboard } from './pages/mobile/dashboard/Dashboard';
+import { ClientList } from './pages/mobile/schedule/ClientList';
+import { ClientDetails } from './pages/mobile/schedule/ClientDetails';
+import { Profile } from './pages/mobile/profile/Profile';
+import { ReportCreation } from './pages/mobile/reports/ReportCreation';
+import { ErrorBoundary } from './components/ErrorBoundary';
+import { LoadingSpinner } from './components/common/LoadingSpinner';
+import { InstallPrompt } from './components/common/InstallPrompt';
+
+// Protected Route component
+const ProtectedRoute: React.FC<{ children: React.ReactNode; requiredRole?: string }> = ({ 
+  children, 
+  requiredRole 
+}) => {
+  const { isAuthenticated, user } = useAuthStore();
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  if (requiredRole && user?.role !== requiredRole) {
+    // Redirect to appropriate dashboard based on user role
+    if (user?.role === 'admin') {
+      return <Navigate to="/admin" replace />;
+    } else if (user?.role === 'pco') {
+      return <Navigate to="/mobile/dashboard" replace />;
+    }
+    return <Navigate to="/login" replace />;
+  }
+  
+  return <>{children}</>;
+};
+
+// Role-based redirect component
+const RoleBasedRedirect: React.FC = () => {
+  const { isAuthenticated, user } = useAuthStore();
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  if (user?.role === 'admin') {
+    return <Navigate to="/admin" replace />;
+  } else if (user?.role === 'pco') {
+    return <Navigate to="/mobile/dashboard" replace />;
+  }
+  
+  return <Navigate to="/login" replace />;
+};
 
 function App() {
-  const { isAuthenticated, user, isLoading } = useAuthStore();
-  const isMobile = isMobileDevice();
+  const { isLoading } = useAuthStore();
 
   // Show loading state while checking authentication
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400 flex items-center justify-center">
-        <div className="bg-white rounded-lg shadow-xl p-8">
-          <div className="flex items-center space-x-3">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
-            <span className="text-gray-700 font-medium">Loading...</span>
-          </div>
-        </div>
-      </div>
-    );
+    return <LoadingSpinner fullScreen label="Initializing application..." />;
   }
 
   return (
-    <>
-      <Router>
+    <ErrorBoundary>
+      <div>
+        <Router>
         <Routes>
-          {/* Mobile devices go directly to PCO app */}
-          {isMobile ? (
-            <>
-              <Route path="/pco/*" element={<PcoApp />} />
-              <Route path="*" element={<Navigate to="/pco" replace />} />
-            </>
-          ) : (
-            <>
-              {/* Desktop routes */}
-              <Route path="/login" element={<LoginPage />} />
-              
-              {/* Protected routes for desktop */}
-              {isAuthenticated && user ? (
-                <>
-                  <Route path="/admin/*" element={user.role === 'admin' ? <AdminLayout /> : <Navigate to="/pco" />} />
-                  <Route path="/pco/*" element={user.role === 'pco' ? <PcoApp /> : <Navigate to="/admin" />} />
-                  
-                  {/* Default redirect based on role */}
-                  <Route path="/" element={
-                    <Navigate to={user.role === 'admin' ? '/admin' : '/pco'} replace />
-                  } />
-                </>
-              ) : (
-                <>
-                  {/* Redirect unauthenticated users to login */}
-                  <Route path="*" element={<Navigate to="/login" replace />} />
-                </>
-              )}
-            </>
-          )}
+          {/* Public Routes */}
+          <Route path="/login" element={<SimplifiedLogin />} />
+          
+          {/* Admin Routes */}
+          <Route path="/admin/*" element={
+            <ProtectedRoute requiredRole="admin">
+              <AdminLayout />
+            </ProtectedRoute>
+          } />
+          
+          {/* Mobile PCO Routes */}
+          <Route path="/mobile/*" element={
+            <ProtectedRoute requiredRole="pco">
+              <Routes>
+                {/* Routes with bottom navigation */}
+                <Route path="/*" element={
+                  <MobileLayout>
+                    <Routes>
+                      <Route path="dashboard" element={<Dashboard />} />
+                      <Route path="schedule" element={<ClientList />} />
+                      <Route path="schedule/:clientId" element={<ClientDetails />} />
+                      <Route path="profile" element={<Profile />} />
+                      <Route path="profile/change-password" element={<div className="p-4">Change Password - Coming Soon</div>} />
+                      <Route path="profile/settings" element={<div className="p-4">Settings - Coming Soon</div>} />
+                      <Route path="reports" element={<div className="p-4">Reports List - Coming Soon</div>} />
+                      <Route path="" element={<Navigate to="dashboard" replace />} />
+                    </Routes>
+                  </MobileLayout>
+                } />
+                
+                {/* Report creation routes without bottom navigation - using URL parameters */}
+                <Route path="reports/new" element={
+                  <MobileReportLayout>
+                    <ReportCreation />
+                  </MobileReportLayout>
+                } />
+              </Routes>
+            </ProtectedRoute>
+          } />
+          
+          {/* Default redirect */}
+          <Route path="/" element={<RoleBasedRedirect />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Router>
       
@@ -89,7 +142,11 @@ function App() {
           },
         }}
       />
-    </>
+      
+      {/* PWA Install Prompt */}
+      <InstallPrompt />
+      </div>
+    </ErrorBoundary>
   );
 }
 

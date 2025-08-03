@@ -1,0 +1,177 @@
+/* Global Input Styles */
+.input-wrapper {
+  @apply relative mb-4;
+}
+
+.input-label {
+  @apply block text-sm font-medium text-gray-700 mb-2;
+}
+
+.input-field {
+  @apply w-full px-3 py-2 border border-gray-300 rounded-md shadow-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 bg-white;
+}
+
+.input-field:disabled {
+  @apply bg-gray-50 text-gray-500 cursor-not-allowed;
+}
+
+.input-field:hover:not(:disabled) {
+  @apply border-gray-400;
+}
+
+.textarea-field {
+  @apply w-full px-3 py-2 border border-gray-300 rounded-md shadow-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 bg-white resize-vertical;
+}
+
+.textarea-field:disabled {
+  @apply bg-gray-50 text-gray-500 cursor-not-allowed;
+}
+
+.textarea-field:hover:not(:disabled) {
+  @apply border-gray-400;
+}
+
+.select-wrapper {
+  @apply relative mb-4;
+}
+
+.select-field {
+  @apply w-full px-3 py-2 border border-gray-300 rounded-md shadow-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 bg-white appearance-none cursor-pointer;
+}
+
+.select-field:disabled {
+  @apply bg-gray-50 text-gray-500 cursor-not-allowed;
+}
+
+.select-field:hover:not(:disabled) {
+  @apply border-gray-400;
+}
+
+/* Override HeroUI default styles */
+[data-slot="input-wrapper"] {
+  @apply shadow-none !important;
+  box-shadow: none !important;
+}
+
+[data-slot="input"] {
+  @apply shadow-none !important;
+  box-shadow: none !important;
+}
+
+[data-slot="inner-wrapper"] {
+  @apply shadow-none !important;
+  box-shadow: none !important;
+}
+
+/* Custom HeroUI Input styling */
+.hero-input {
+  --hero-input-bg: theme(colors.white);
+  --hero-input-border: theme(colors.gray.300);
+  --hero-input-hover-border: theme(colors.gray.400);
+  --hero-input-focus-border: theme(colors.blue.500);
+  --hero-input-focus-ring: theme(colors.blue.500 / 20%);
+}
+
+.hero-input [data-slot="input-wrapper"] {
+  background: var(--hero-input-bg) !important;
+  border: 1px solid var(--hero-input-border) !important;
+  border-radius: 6px !important;
+  box-shadow: none !important;
+  transition: all 0.2s ease !important;
+}
+
+.hero-input [data-slot="input-wrapper"]:hover {
+  border-color: var(--hero-input-hover-border) !important;
+}
+
+.hero-input [data-slot="input-wrapper"][data-focus="true"] {
+  border-color: var(--hero-input-focus-border) !important;
+  box-shadow: 0 0 0 3px var(--hero-input-focus-ring) !important;
+}
+
+.hero-input [data-slot="label"] {
+  color: theme(colors.gray.700) !important;
+  font-weight: 500 !important;
+  font-size: 0.875rem !important;
+  margin-bottom: 0.5rem !important;
+  position: static !important;
+  transform: none !important;
+  transition: none !important;
+}
+
+/* Admin notes styling */
+.admin-notes-input [data-slot="input-wrapper"] {
+  background: theme(colors.yellow.50) !important;
+  border-color: theme(colors.yellow.200) !important;
+}
+
+.admin-notes-input [data-slot="input-wrapper"]:hover {
+  border-color: theme(colors.yellow.300) !important;
+}
+
+.admin-notes-input [data-slot="input-wrapper"][data-focus="true"] {
+  border-color: theme(colors.yellow.400) !important;
+  box-shadow: 0 0 0 3px theme(colors.yellow.400 / 20%) !important;
+}
+
+/* Form section styling */
+.form-section {
+  @apply bg-white rounded-lg border border-gray-200 p-6 mb-6;
+}
+
+.form-section-title {
+  @apply text-lg font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-200;
+}
+
+.form-grid {
+  @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4;
+}
+
+.form-grid-full {
+  @apply col-span-full;
+}
+
+.form-grid-half {
+  @apply col-span-1 md:col-span-2;
+}
+
+/* Card styling improvements */
+.report-card {
+  @apply bg-white rounded-lg border border-gray-200 shadow-sm;
+}
+
+.report-card-header {
+  @apply p-6 border-b border-gray-200;
+}
+
+.report-card-body {
+  @apply p-6;
+}
+
+/* Remove default shadows from various components */
+.shadow-none-important {
+  box-shadow: none !important;
+}
+
+/* Checkbox styling */
+.hero-checkbox [data-slot="wrapper"] {
+  @apply shadow-none !important;
+}
+
+/* Button improvements */
+.hero-button {
+  @apply shadow-none transition-colors duration-200;
+}
+
+.hero-button:hover {
+  @apply shadow-sm;
+}
+
+/* Modal improvements */
+.hero-modal [data-slot="backdrop"] {
+  @apply bg-black/50;
+}
+
+.hero-modal [data-slot="wrapper"] {
+  @apply shadow-xl;
+}

@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
     tailwindcss(),
@@ -21,9 +21,29 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    sourcemap: true,
+    sourcemap: mode === 'development',
+    // Production optimizations
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          router: ['react-router-dom'],
+          ui: ['@heroui/react', 'framer-motion'],
+          icons: ['lucide-react'],
+          utils: ['axios', 'zustand']
+        }
+      }
+    },
+    // Enable compression
+    minify: 'terser',
+    // Optimize chunk size
+    chunkSizeWarningLimit: 1000
+  },
+  // PWA optimizations
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'react-router-dom', '@heroui/react']
   },
   preview: {
     host: true,
   }
-})
+}))

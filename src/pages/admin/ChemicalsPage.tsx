@@ -10,7 +10,8 @@ import {
   Package,
   Activity,
   ChevronDown,
-  Check
+  Check,
+  Archive
 } from 'lucide-react';
 import { 
   Modal, 
@@ -25,7 +26,9 @@ import {
   DropdownMenu,
   DropdownItem,
   Chip,
-  Avatar
+  Avatar,
+  Tabs,
+  Tab
 } from '@heroui/react';
 import toast from 'react-hot-toast';
 import { adminService } from '../../services/adminService';
@@ -33,6 +36,7 @@ import type { Chemical, ChemicalStats } from '../../services/adminService';
 
 export const ChemicalsPage: React.FC = () => {
   const [chemicals, setChemicals] = useState<Chemical[]>([]);
+  const [inactiveChemicals, setInactiveChemicals] = useState<Chemical[]>([]);
   const [stats, setStats] = useState<ChemicalStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSearching, setIsSearching] = useState(false);
@@ -40,17 +44,21 @@ export const ChemicalsPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState<string>('all');
+  const [viewMode, setViewMode] = useState<'active' | 'inactive'>('active');
   const [isCreating, setIsCreating] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isPermanentDeleting, setIsPermanentDeleting] = useState(false);
 
   // HeroUI disclosure hooks
   const { isOpen: isCreateModalOpen, onOpen: onCreateModalOpen, onClose: onCreateModalClose } = useDisclosure();
   const { isOpen: isEditModalOpen, onOpen: onEditModalOpen, onClose: onEditModalClose } = useDisclosure();
   const { isOpen: isViewModalOpen, onOpen: onViewModalOpen, onClose: onViewModalClose } = useDisclosure();
   const { isOpen: isDeleteModalOpen, onOpen: onDeleteModalOpen, onClose: onDeleteModalClose } = useDisclosure();
+  const { isOpen: isPermanentDeleteModalOpen, onOpen: onPermanentDeleteModalOpen, onClose: onPermanentDeleteModalClose } = useDisclosure();
   
   const [chemicalToDelete, setChemicalToDelete] = useState<Chemical | null>(null);
+  const [chemicalToPermanentDelete, setChemicalToPermanentDelete] = useState<Chemical | null>(null);
   const [selectedChemical, setSelectedChemical] = useState<Chemical | null>(null);
 
   // Form state for creating chemical
@@ -108,6 +116,37 @@ export const ChemicalsPage: React.FC = () => {
     }
   }, [filterCategory, hasInitialData]);
 
+  const loadInactiveChemicals = useCallback(async (isInitialLoad = false) => {
+    try {
+      // Use skeleton loading for initial load, dialog for subsequent loads
+      if (isInitialLoad || !hasInitialData) {
+        setIsLoading(true);
+      } else {
+        setIsSearching(true);
+      }
+      setError(null);
+      const response = await adminService.getInactiveChemicals();
+      
+      if (response.success && response.data) {
+        setInactiveChemicals(response.data);
+        if (!hasInitialData) {
+          setHasInitialData(true);
+        }
+      } else {
+        setError('Failed to load inactive chemicals');
+      }
+    } catch (error) {
+      console.error('Inactive chemicals load error:', error);
+      setError('Failed to load inactive chemicals');
+    } finally {
+      if (isInitialLoad || !hasInitialData) {
+        setIsLoading(false);
+      } else {
+        setIsSearching(false);
+      }
+    }
+  }, [hasInitialData]);
+
   const loadStats = async () => {
     try {
       const response = await adminService.getChemicalStats();
@@ -120,14 +159,18 @@ export const ChemicalsPage: React.FC = () => {
   };
 
   useEffect(() => {
-    loadChemicals(true); // Initial load
-  }, [loadChemicals]);
+    if (viewMode === 'active') {
+      loadChemicals(true); // Initial load
+    } else {
+      loadInactiveChemicals(true); // Initial load
+    }
+  }, [viewMode, loadChemicals, loadInactiveChemicals]);
 
   useEffect(() => {
-    if (hasInitialData) { // Only trigger filter changes after initial data is loaded
+    if (hasInitialData && viewMode === 'active') { // Only trigger filter changes after initial data is loaded
       loadChemicals(false);
     }
-  }, [filterCategory, loadChemicals, hasInitialData]);
+  }, [filterCategory, loadChemicals, hasInitialData, viewMode]);
 
   const handleCreateChemical = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -226,9 +269,37 @@ export const ChemicalsPage: React.FC = () => {
     }
   };
 
+  const handlePermanentDeleteChemical = async () => {
+    if (!chemicalToPermanentDelete) return;
+    
+    try {
+      setIsPermanentDeleting(true);
+      const response = await adminService.permanentDeleteChemical(chemicalToPermanentDelete.id);
+      if (response.success) {
+        await loadInactiveChemicals(false);
+        await loadStats();
+        toast.success('Chemical permanently deleted successfully!');
+        onPermanentDeleteModalClose();
+        setChemicalToPermanentDelete(null);
+      } else {
+        toast.error('Failed to permanently delete chemical. Please try again.');
+      }
+    } catch (error) {
+      console.error('Permanent delete chemical error:', error);
+      toast.error('An error occurred while permanently deleting the chemical.');
+    } finally {
+      setIsPermanentDeleting(false);
+    }
+  };
+
   const handleDeleteClick = (chemical: Chemical) => {
     setChemicalToDelete(chemical);
     onDeleteModalOpen();
+  };
+
+  const handlePermanentDeleteClick = (chemical: Chemical) => {
+    setChemicalToPermanentDelete(chemical);
+    onPermanentDeleteModalOpen();
   };
 
   const handleViewChemical = (chemical: Chemical) => {
@@ -238,12 +309,22 @@ export const ChemicalsPage: React.FC = () => {
 
 
 
-  const filteredChemicals = chemicals.filter(chemical => {
+  const currentChemicals = viewMode === 'active' ? chemicals : inactiveChemicals;
+  
+  const filteredChemicals = currentChemicals.filter(chemical => {
     const matchesSearch = chemical.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          chemical.l_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          (chemical.type && chemical.type.toLowerCase().includes(searchTerm.toLowerCase()));
     
-    return matchesSearch;
+    // For inactive chemicals, don't apply category filter since they already have mixed categories
+    if (viewMode === 'inactive') {
+      return matchesSearch;
+    }
+    
+    // For active chemicals, apply category filter
+    const matchesCategory = filterCategory === 'all' || chemical.category === filterCategory;
+    
+    return matchesSearch && matchesCategory;
   });
 
   if (isLoading && !hasInitialData) {
@@ -379,13 +460,43 @@ export const ChemicalsPage: React.FC = () => {
               <p className="text-sm text-gray-500">Manage your chemical inventory</p>
             </div>
           </div>
-          <Button 
-            onClick={onCreateModalOpen}
-            className="bg-purple-600 hover:bg-purple-700 text-white font-medium px-6 py-2.5 rounded-xl shadow-sm"
-            startContent={<Plus className="h-4 w-4" />}
-          >
-            Add Chemical
-          </Button>
+          <div className="flex items-center space-x-4">
+            <Tabs 
+              selectedKey={viewMode}
+              onSelectionChange={(key) => {
+                setViewMode(key as 'active' | 'inactive');
+                setSearchTerm(''); // Clear search when switching
+                setFilterCategory('all'); // Reset filter when switching
+              }}
+              classNames={{
+                tabList: "bg-gray-100 p-1 rounded-lg",
+                tab: "px-4 py-2 rounded-md text-sm font-medium",
+                cursor: "bg-white shadow-sm",
+              }}
+            >
+              <Tab key="active" title={
+                <div className="flex items-center space-x-2">
+                  <Check className="h-4 w-4" />
+                  <span>Active Chemicals</span>
+                </div>
+              } />
+              <Tab key="inactive" title={
+                <div className="flex items-center space-x-2">
+                  <Archive className="h-4 w-4" />
+                  <span>Inactive Chemicals</span>
+                </div>
+              } />
+            </Tabs>
+            {viewMode === 'active' && (
+              <Button 
+                onClick={onCreateModalOpen}
+                className="bg-purple-600 hover:bg-purple-700 text-white font-medium px-6 py-2.5 rounded-xl shadow-sm"
+                startContent={<Plus className="h-4 w-4" />}
+              >
+                Add Chemical
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -466,21 +577,23 @@ export const ChemicalsPage: React.FC = () => {
                       />
                     </div>
                   </div>
-                  <div className="relative w-48">
-                    <select
-                      value={filterCategory}
-                      onChange={(e) => setFilterCategory(e.target.value)}
-                      className="block w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-0 focus:border-purple-500 hover:border-gray-400 transition-colors appearance-none cursor-pointer"
-                    >
-                      <option value="all">All Categories</option>
-                      <option value="inspection">Inspection</option>
-                      <option value="fumigation">Fumigation</option>
-                      <option value="both">Multi-Purpose</option>
-                    </select>
-                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                      <ChevronDown className="h-4 w-4 text-gray-400" />
+                  {viewMode === 'active' && (
+                    <div className="relative w-48">
+                      <select
+                        value={filterCategory}
+                        onChange={(e) => setFilterCategory(e.target.value)}
+                        className="block w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-0 focus:border-purple-500 hover:border-gray-400 transition-colors appearance-none cursor-pointer"
+                      >
+                        <option value="all">All Categories</option>
+                        <option value="inspection">Inspection</option>
+                        <option value="fumigation">Fumigation</option>
+                        <option value="both">Multi-Purpose</option>
+                      </select>
+                      <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                        <ChevronDown className="h-4 w-4 text-gray-400" />
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
                 <div className="text-sm text-gray-500">
                   {filteredChemicals.length} items
@@ -527,21 +640,37 @@ export const ChemicalsPage: React.FC = () => {
                     </div>
                     <div className="flex items-center space-x-4">
                       <div className="text-right">
-                        <p className="text-sm font-medium text-gray-900">{chemical.quantity_unit}</p>
-                        <p className="text-xs text-gray-500">
-                          {new Date(chemical.created_at).toLocaleDateString()}
-                        </p>
+                        {viewMode === 'inactive' ? (
+                          <>
+                            <p className="text-sm font-medium text-gray-900">
+                              {chemical.total_usage_count || 0} reports
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {chemical.last_used_formatted || 'Never used'}
+                            </p>
+                          </>
+                        ) : (
+                          <>
+                            <p className="text-sm font-medium text-gray-900">{chemical.quantity_unit}</p>
+                            <p className="text-xs text-gray-500">
+                              {new Date(chemical.created_at).toLocaleDateString()}
+                            </p>
+                          </>
+                        )}
                       </div>
                       <Chip
                         size="sm"
                         variant="flat"
                         classNames={{
-                          base: chemical.is_active 
-                            ? 'bg-green-100 text-green-800' 
+                          base: viewMode === 'active' 
+                            ? (chemical.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800')
                             : 'bg-red-100 text-red-800',
                         }}
                       >
-                        {chemical.is_active ? 'Active' : 'Inactive'}
+                        {viewMode === 'active' 
+                          ? (chemical.is_active ? 'Active' : 'Inactive')
+                          : 'Inactive'
+                        }
                       </Chip>
                       <Dropdown>
                         <DropdownTrigger>
@@ -557,22 +686,37 @@ export const ChemicalsPage: React.FC = () => {
                           >
                             View Details
                           </DropdownItem>
-                          <DropdownItem 
-                            key="edit" 
-                            startContent={<Edit3 className="h-4 w-4" />}
-                            onPress={() => handleEditChemical(chemical)}
-                          >
-                            Edit
-                          </DropdownItem>
-                          <DropdownItem 
-                            key="delete" 
-                            className="text-danger" 
-                            color="danger"
-                            startContent={<Trash2 className="h-4 w-4" />}
-                            onPress={() => handleDeleteClick(chemical)}
-                          >
-                            Deactivate
-                          </DropdownItem>
+                          {viewMode === 'active' ? (
+                            <>
+                              <DropdownItem 
+                                key="edit" 
+                                startContent={<Edit3 className="h-4 w-4" />}
+                                onPress={() => handleEditChemical(chemical)}
+                              >
+                                Edit
+                              </DropdownItem>
+                              <DropdownItem 
+                                key="delete" 
+                                className="text-danger" 
+                                color="danger"
+                                startContent={<Archive className="h-4 w-4" />}
+                                onPress={() => handleDeleteClick(chemical)}
+                              >
+                                Deactivate
+                              </DropdownItem>
+                            </>
+                          ) : (
+                            <DropdownItem 
+                              key="permanent-delete" 
+                              className="text-danger" 
+                              color="danger"
+                              startContent={<Trash2 className="h-4 w-4" />}
+                              onPress={() => handlePermanentDeleteClick(chemical)}
+                              isDisabled={chemical.total_usage_count !== 0}
+                            >
+                              {chemical.total_usage_count === 0 ? 'Delete Permanently' : `Used in ${chemical.total_usage_count} reports`}
+                            </DropdownItem>
+                          )}
                         </DropdownMenu>
                       </Dropdown>
                     </div>
@@ -584,15 +728,24 @@ export const ChemicalsPage: React.FC = () => {
             {filteredChemicals.length === 0 && (
               <div className="text-center py-16">
                 <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Package className="h-8 w-8 text-gray-400" />
+                  {viewMode === 'active' ? (
+                    <Package className="h-8 w-8 text-gray-400" />
+                  ) : (
+                    <Archive className="h-8 w-8 text-gray-400" />
+                  )}
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No chemicals found</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  {viewMode === 'active' ? 'No active chemicals found' : 'No inactive chemicals found'}
+                </h3>
                 <p className="text-gray-500 text-sm mb-6">
-                  {searchTerm || filterCategory !== 'all' 
+                  {searchTerm || (viewMode === 'active' && filterCategory !== 'all')
                     ? 'Try adjusting your search or filter criteria'
-                    : 'Get started by adding your first chemical'}
+                    : viewMode === 'active'
+                    ? 'Get started by adding your first chemical'
+                    : 'All chemicals are currently active'
+                  }
                 </p>
-                {!searchTerm && filterCategory === 'all' && (
+                {!searchTerm && filterCategory === 'all' && viewMode === 'active' && (
                   <Button 
                     onClick={onCreateModalOpen}
                     className="bg-purple-600 hover:bg-purple-700 text-white rounded-xl"
@@ -945,37 +1098,57 @@ export const ChemicalsPage: React.FC = () => {
                           {new Date(selectedChemical.created_at).toLocaleDateString()}
                         </span>
                       </div>
+                      {selectedChemical.last_used_date && (
+                        <div className="flex justify-between py-2">
+                          <span className="text-sm text-gray-600">Last Used:</span>
+                          <span className="text-sm font-medium text-gray-900">
+                            {selectedChemical.last_used_formatted || new Date(selectedChemical.last_used_date).toLocaleDateString()}
+                          </span>
+                        </div>
+                      )}
                     </div>
                   </div>
 
-                  {selectedChemical.usage_stats && (
+                  {(selectedChemical.usage_stats || selectedChemical.inspection_usage_count !== undefined) && (
                     <div className="space-y-4">
                       <h4 className="font-semibold text-gray-900 text-base">Usage Statistics</h4>
                       <div className="space-y-3">
                         <div className="flex justify-between py-2">
                           <span className="text-sm text-gray-600">Inspection Usage:</span>
                           <span className="text-sm font-medium text-gray-900">
-                            {selectedChemical.usage_stats.inspection_usage_count || 0} times
+                            {selectedChemical.usage_stats?.inspection_usage_count || selectedChemical.inspection_usage_count || 0} times
                           </span>
                         </div>
                         <div className="flex justify-between py-2">
                           <span className="text-sm text-gray-600">Fumigation Usage:</span>
                           <span className="text-sm font-medium text-gray-900">
-                            {selectedChemical.usage_stats.fumigation_usage_count || 0} times
+                            {selectedChemical.usage_stats?.fumigation_usage_count || selectedChemical.fumigation_usage_count || 0} times
                           </span>
                         </div>
-                        <div className="flex justify-between py-2">
-                          <span className="text-sm text-gray-600">Total Inspection Qty:</span>
-                          <span className="text-sm font-medium text-gray-900">
-                            {selectedChemical.usage_stats.total_inspection_quantity || 'N/A'} {selectedChemical.quantity_unit}
-                          </span>
-                        </div>
-                        <div className="flex justify-between py-2">
-                          <span className="text-sm text-gray-600">Total Fumigation Qty:</span>
-                          <span className="text-sm font-medium text-gray-900">
-                            {selectedChemical.usage_stats.total_fumigation_quantity || 'N/A'} {selectedChemical.quantity_unit}
-                          </span>
-                        </div>
+                        {selectedChemical.total_usage_count !== undefined && (
+                          <div className="flex justify-between py-2">
+                            <span className="text-sm text-gray-600">Total Usage:</span>
+                            <span className="text-sm font-medium text-gray-900">
+                              {selectedChemical.total_usage_count} reports
+                            </span>
+                          </div>
+                        )}
+                        {selectedChemical.usage_stats && (
+                          <>
+                            <div className="flex justify-between py-2">
+                              <span className="text-sm text-gray-600">Total Inspection Qty:</span>
+                              <span className="text-sm font-medium text-gray-900">
+                                {selectedChemical.usage_stats.total_inspection_quantity || 'N/A'} {selectedChemical.quantity_unit}
+                              </span>
+                            </div>
+                            <div className="flex justify-between py-2">
+                              <span className="text-sm text-gray-600">Total Fumigation Qty:</span>
+                              <span className="text-sm font-medium text-gray-900">
+                                {selectedChemical.usage_stats.total_fumigation_quantity || 'N/A'} {selectedChemical.quantity_unit}
+                              </span>
+                            </div>
+                          </>
+                        )}
                       </div>
                     </div>
                   )}
@@ -991,18 +1164,20 @@ export const ChemicalsPage: React.FC = () => {
             >
               Close
             </Button>
-            <Button 
-              onPress={() => {
-                onViewModalClose();
-                if (selectedChemical) {
-                  handleEditChemical(selectedChemical);
-                }
-              }}
-              className="bg-purple-600 hover:bg-purple-700 text-white px-6 rounded-xl"
-              startContent={<Edit3 className="h-4 w-4" />}
-            >
-              Edit Chemical
-            </Button>
+            {viewMode === 'active' && (
+              <Button 
+                onPress={() => {
+                  onViewModalClose();
+                  if (selectedChemical) {
+                    handleEditChemical(selectedChemical);
+                  }
+                }}
+                className="bg-purple-600 hover:bg-purple-700 text-white px-6 rounded-xl"
+                startContent={<Edit3 className="h-4 w-4" />}
+              >
+                Edit Chemical
+              </Button>
+            )}
           </ModalFooter>
         </ModalContent>
       </Modal>
@@ -1070,6 +1245,87 @@ export const ChemicalsPage: React.FC = () => {
               className="px-6"
             >
               {isDeleting ? 'Deactivating...' : 'Deactivate Chemical'}
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+      {/* Freshdesk-style Permanent Delete Modal */}
+      <Modal 
+        isOpen={isPermanentDeleteModalOpen} 
+        onClose={onPermanentDeleteModalClose} 
+        size="md"
+        classNames={{
+          base: "bg-white",
+          backdrop: "bg-black/50"
+        }}
+      >
+        <ModalContent>
+          <ModalHeader className="px-6 py-4 border-b border-gray-200">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
+                <Trash2 className="h-4 w-4 text-red-600" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900">Permanent Deletion</h2>
+                <p className="text-sm text-gray-500">This action cannot be undone</p>
+              </div>
+            </div>
+          </ModalHeader>
+          <ModalBody className="px-6 py-6">
+            {chemicalToPermanentDelete && (
+              <div className="space-y-4">
+                <div className="p-4 bg-red-50 rounded-xl border border-red-200">
+                  <div className="flex items-center space-x-3">
+                    <Avatar
+                      name={chemicalToPermanentDelete.name.charAt(0).toUpperCase()}
+                      className="w-10 h-10 bg-red-600 text-white font-semibold"
+                    />
+                    <div>
+                      <p className="font-medium text-gray-900">{chemicalToPermanentDelete.name}</p>
+                      <p className="text-sm text-gray-500">{chemicalToPermanentDelete.l_number}</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-sm text-gray-900">
+                    Are you sure you want to permanently delete this chemical?
+                  </p>
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                    <div className="flex items-start space-x-2">
+                      <AlertCircle className="h-4 w-4 text-yellow-600 mt-0.5 flex-shrink-0" />
+                      <div className="text-xs text-yellow-800">
+                        <p className="font-medium mb-1">This will permanently remove:</p>
+                        <ul className="list-disc list-inside space-y-1">
+                          <li>The chemical from your inventory</li>
+                          <li>All historical references</li>
+                          <li>This action cannot be reversed</li>
+                        </ul>
+                        <p className="mt-2">
+                          Usage Count: <span className="font-semibold">{chemicalToPermanentDelete.total_usage_count || 0} reports</span>
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </ModalBody>
+          <ModalFooter className="px-6 py-4 border-t border-gray-200">
+            <Button 
+              variant="light" 
+              onPress={onPermanentDeleteModalClose}
+              className="mr-3"
+            >
+              Cancel
+            </Button>
+            <Button 
+              color="danger" 
+              onPress={handlePermanentDeleteChemical}
+              isLoading={isPermanentDeleting}
+              className="px-6"
+              startContent={!isPermanentDeleting ? <Trash2 className="h-4 w-4" /> : undefined}
+            >
+              {isPermanentDeleting ? 'Deleting...' : 'Delete Permanently'}
             </Button>
           </ModalFooter>
         </ModalContent>

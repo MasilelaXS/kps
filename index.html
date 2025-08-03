@@ -2,12 +2,55 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + React + TS</title>
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="description" content="KPS Pest Control Portal - Mobile application for Pest Control Officers to manage reports, schedules, and client information" />
+    <meta name="theme-color" content="#0066cc" />
+    <meta name="msapplication-TileColor" content="#0066cc" />
+    <meta name="msapplication-navbutton-color" content="#0066cc" />
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+    
+    <!-- iOS PWA Support -->
+    <link rel="apple-touch-icon" href="/192.png" />
+    <link rel="apple-touch-icon" sizes="192x192" href="/192.png" />
+    <link rel="apple-touch-icon" sizes="512x512" href="/512.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="KPS Portal" />
+    
+    <!-- Android PWA Support -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="application-name" content="KPS Portal" />
+    
+    <!-- Windows PWA Support -->
+    <meta name="msapplication-starturl" content="/" />
+    <meta name="msapplication-tooltip" content="KPS Pest Control Portal" />
+    <meta name="msapplication-tap-highlight" content="no" />
+    
+    <title>KPS Portal - Pest Control Management</title>
+    
+    <!-- Performance Optimization -->
+    <link rel="preconnect" href="https://portal.kpspestcontrol.co.za" />
+    <link rel="dns-prefetch" href="https://portal.kpspestcontrol.co.za" />
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    
+    <!-- Service Worker Registration -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+          navigator.serviceWorker.register('/sw.js')
+            .then(function(registration) {
+              console.log('SW registered: ', registration);
+            }, function(registrationError) {
+              console.log('SW registration failed: ', registrationError);
+            });
+        });
+      }
+    </script>
   </body>
 </html>

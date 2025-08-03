@@ -38,6 +38,21 @@ export const AdminSidebar: React.FC = () => {
             <p className="text-sm text-purple-200">Control Panel</p>
           </div>
         </div>
+        
+        {/* From Dannel Logo */}
+        <div className="mt-4 pt-4 border-t border-purple-500/30">
+          <div className="flex items-center justify-center space-x-2">
+            <span className="text-sm text-purple-200">from</span>
+            <img 
+              src="/dannel.svg" 
+              alt="Dannel Logo" 
+              className="h-8 w-auto opacity-80"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+          </div>
+        </div>
       </div>
 
       {/* Navigation Menu */}

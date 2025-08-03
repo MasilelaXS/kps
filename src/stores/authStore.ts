@@ -2,7 +2,6 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { authService } from '../services/authService';
 import type { User } from '../services/authService';
-import { usePcoAuthStore } from './pcoAuthStore';
 
 export interface AuthState {
   user: User | null;
@@ -47,24 +46,15 @@ export const useAuthStore = create<AuthState>()(
               error: null 
             });
             
-            // If user is PCO, also set PCO auth store
+            // If user is PCO, the main user object now contains all needed data
             if (user.role === 'pco') {
-              const pcoUser = {
-                id: user.id,
-                pco_number: user.pco_number || '',
-                name: user.name,
-                email: user.email,
-                role: user.role,
-                status: user.status,
-                created_at: new Date().toISOString(),
-                last_login: new Date().toISOString()
-              };
-              usePcoAuthStore.getState().setPcoUser(pcoUser);
+              console.log('🔐 AUTH: PCO user logged in successfully:', user.name);
+              // All PCO data is now available in the main user object
             }
             
             // Show success message briefly before redirect
             setTimeout(() => {
-              const redirectPath = user.role === 'admin' ? '/admin' : '/pco';
+              const redirectPath = user.role === 'admin' ? '/admin' : '/mobile';
               window.location.href = redirectPath;
             }, 1000);
           } else {
@@ -149,9 +139,7 @@ export const useAuthStore = create<AuthState>()(
           console.error('Logout error:', error);
         }
         
-        // Clear both auth stores
-        usePcoAuthStore.getState().clearPcoUser();
-        
+        // Clear auth store
         set({ 
           user: null, 
           permissions: [],

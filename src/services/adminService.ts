@@ -1,277 +1,17 @@
 import { apiClient } from './apiClient';
 import type { ApiResponse } from './apiClient';
-
-// Types based on the actual API response
-export interface DashboardSummary {
-  total_clients: number;
-  active_pcos: number;
-  pending_reports: number;
-  completed_reports: number;
-}
-
-export interface ClientNeedingAttention {
-  id: number;
-  name: string;
-  email: string;
-  phone: string;
-  last_report_date: string | null;
-  days_since_last_report: number | null;
-  assigned_pco: string | null;
-  pco_number: string | null;
-}
-
-export interface RecentActivity {
-  id: number;
-  type: string;
-  description: string;
-  created_at: string;
-}
-
-export interface TopPCO {
-  id: number;
-  name: string;
-  pco_number: string;
-  total_reports: number;
-  reports_this_month: number;
-  avg_reports_per_week: number;
-  assigned_clients: number;
-}
-
-export interface MonthlyTrend {
-  month: string;
-  report_count: number;
-  new_clients: number;
-}
-
-export interface AdminDashboardData {
-  summary: DashboardSummary;
-  recent_reports?: unknown[];
-  chemical_usage?: unknown[];
-}
-
-export interface Client {
-  id: number;
-  name: string;
-  address: string;
-  email: string;
-  phone: string;
-  contact?: Array<{
-    name: string;
-    number: string;
-  }>;
-  contact_person?: string; // Keep for backward compatibility
-  status: string;
-  deleted_at: string | null;
-  created_at: string;
-  updated_at: string;
-  assigned_pco_name?: string | null;
-  assigned_pco_number?: string | null;
-  assigned_at?: string | null;
-  total_reports: number;
-  last_service_date: string | null;
-  pending_reports: number;
-  // For backward compatibility with UI components
-  assigned_pco?: {
-    id: number;
-    name: string;
-    pco_number: string;
-  } | null;
-}
-
-export interface PaginationInfo {
-  current_page: number;
-  total_pages: number;
-  total_records: number;
-  per_page: number;
-}
-
-export interface AdminClientsResponse {
-  clients: Client[];
-  pagination: PaginationInfo;
-}
-
-export interface Report {
-  id: number;
-  client: {
-    id: number;
-    name: string;
-  };
-  pco: {
-    id: number;
-    name: string;
-    pco_number: string;
-  };
-  report_type: string;
-  status: string;
-  created_at: string;
-  has_missing_batch_numbers: boolean;
-  station_count: number;
-  chemicals_used: number;
-}
-
-export interface DetailedReport {
-  id: number;
-  client_id: number;
-  pco_id: number;
-  report_type: string;
-  status: string;
-  overall_remarks: string;
-  warning_signs_replaced: boolean;
-  warning_signs_quantity: number;
-  recommendations: string;
-  next_service_date: string;
-  created_at: string;
-  updated_at: string;
-  reviewed_by_name?: string;
-  reviewed_at?: string;
-  admin_notes?: string;
-  client: {
-    id: number;
-    name: string;
-    address: string;
-  };
-  pco: {
-    id: number;
-    name: string;
-    pco_number: string;
-  };
-  // API returns 'stations' for regular endpoints, 'inspection_stations' for admin endpoints
-  stations?: Array<{
-    id: number;
-    station_number: string;
-    location: string;
-    is_accessible: boolean;
-    has_activity: boolean;
-    activity_type: string | null;
-    station_condition: string[];
-    bait_status: string;
-    rodent_box_replaced: boolean;
-    poison_used_id: number;
-    poison_quantity: number;
-    batch_number: string;
-    station_remarks: string;
-  }>;
-  // Admin API returns inspection_stations
-  inspection_stations?: Array<{
-    id: number;
-    station_number: number;
-    location: 'inside' | 'outside';
-    is_accessible: boolean;
-    has_activity: boolean;
-    activity_type: 'droppings' | 'gnawing' | 'tracks' | 'other' | null;
-    activity_description?: string;
-    bait_status: 'eaten' | 'partially_eaten' | 'untouched' | 'moldy';
-    poison_used_id: number;
-    poison_quantity: number;
-    batch_number: string;
-    station_remarks: string;
-    chemical_name?: string;
-    l_number?: string;
-  }>;
-  fumigation_treatments: Array<{
-    id?: number;
-    treated_areas: string[];
-    treated_for: string[];
-    insect_monitor_replaced: boolean;
-    general_remarks: string;
-    chemicals: Array<{
-      id?: number;
-      chemical_id: number;
-      quantity: number;
-      batch_number: string;
-      batch_number_note?: string | null;
-      chemical_name?: string;
-      l_number?: string;
-    }>;
-  }>;
-}
-
-export interface ReportsSummary {
-  total: number;
-  pending: number;
-  approved: number;
-  declined: number;
-  archived: number;
-}
-
-export interface AdminReportsResponse {
-  reports: Report[];
-  summary: ReportsSummary;
-}
-
-export interface ClientNote {
-  id: number;
-  client_id: number;
-  user_id: number;
-  note_text: string;
-  is_private: boolean;
-  created_at: string;
-  updated_at: string;
-  client_name?: string;
-  created_by_name: string;
-  created_by_role: string;
-}
-
-export interface Assignment {
-  id: number;
-  client_id: number;
-  pco_id: number;
-  assigned_by: number;
-  assigned_at: string;
-  client_name: string;
-  client_address: string;
-  pco_name: string;
-  pco_number: string;
-  assigned_by_name: string;
-}
-
-export interface User {
-  id: number;
-  pco_number: string;
-  name: string;
-  email: string;
-  role: string;
-  phone?: string;
-  status: string;
-  created_at: string;
-  updated_at?: string;
-}
-
-export interface Chemical {
-  id: number;
-  l_number: string;
-  name: string;
-  type?: string;
-  category: 'inspection' | 'fumigation' | 'both';
-  quantity_unit: string;
-  is_active: number;
-  created_at: string;
-  usage_stats?: {
-    inspection_usage_count: number;
-    fumigation_usage_count: number;
-    total_inspection_quantity: number | null;
-    total_fumigation_quantity: number | null;
-  };
-}
-
-export interface ChemicalStats {
-  summary: {
-    total_chemicals: number;
-    active_chemicals: number;
-    inspection_chemicals: number;
-    fumigation_chemicals: number;
-    both_chemicals: number;
-  };
-  top_used_chemicals: Array<{
-    id: number;
-    name: string;
-    l_number: string;
-    total_usage: number;
-    inspection_usage: number;
-    fumigation_usage: number;
-    last_used: string;
-  }>;
-}
+import type {
+  AdminDashboardData,
+  Client,
+  AdminClientsResponse,
+  DetailedReport,
+  AdminReportsResponse,
+  ClientNote,
+  Assignment,
+  User,
+  Chemical,
+  ChemicalStats
+} from '../types/admin';
 
 class AdminService {
   async getDashboard(): Promise<ApiResponse<AdminDashboardData>> {
@@ -358,6 +98,9 @@ class AdminService {
     date_from?: string;
     date_to?: string;
     report_type?: string;
+    search?: string;
+    page?: number;
+    limit?: number;
   }): Promise<ApiResponse<AdminReportsResponse>> {
     try {
       const queryParams = new URLSearchParams();
@@ -367,6 +110,9 @@ class AdminService {
       if (params?.date_from) queryParams.append('date_from', params.date_from);
       if (params?.date_to) queryParams.append('date_to', params.date_to);
       if (params?.report_type) queryParams.append('report_type', params.report_type);
+      if (params?.search) queryParams.append('search', params.search);
+      if (params?.page) queryParams.append('page', params.page.toString());
+      if (params?.limit) queryParams.append('limit', params.limit.toString());
 
       // Use the correct admin reports endpoint from API documentation
       const url = `/admin/reports${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
@@ -382,56 +128,71 @@ class AdminService {
   }
 
   async editReport(reportId: number, data: {
+    client_id?: number;
+    pco_id?: number;
+    report_type?: 'inspection' | 'fumigation' | 'both';
+    date_of_service?: string;
     overall_remarks?: string;
     recommendations?: string;
     next_service_date?: string;
+    fumigation_remarks?: string;
     warning_signs_replaced?: boolean;
     warning_signs_quantity?: number;
-    station_operations?: Array<{
-      action: 'add' | 'update' | 'delete';
-      station_id?: number;
-      data?: {
-        station_number?: number;
-        location?: 'inside' | 'outside';
-        is_accessible?: boolean;
-        has_activity?: boolean;
-        activity_type?: 'droppings' | 'gnawing' | 'tracks' | 'other';
-        activity_description?: string;
-        station_condition?: string[];
-        bait_status?: 'eaten' | 'partially_eaten' | 'untouched' | 'moldy';
-        rodent_box_replaced?: boolean;
-        poison_used_id?: number;
-        poison_quantity?: number;
-        batch_number?: string;
-        station_remarks?: string;
-      };
+    admin_notes?: string;
+    // Allow station operations
+    stations?: Array<{
+      id?: number;
+      station_number?: number;
+      location?: 'inside' | 'outside';
+      is_accessible?: boolean;
+      has_activity?: boolean;
+      activity_type?: 'droppings' | 'gnawing' | 'tracks' | 'other' | null;
+      activity_description?: string;
+      station_condition?: string[];
+      bait_status?: 'eaten' | 'partially_eaten' | 'untouched' | 'moldy';
+      rodent_box_replaced?: boolean;
+      poison_used_id?: number;
+      poison_quantity?: number;
+      batch_number?: string;
+      station_remarks?: string;
     }>;
-    treatment_operations?: Array<{
-      action: 'add' | 'update' | 'delete';
-      treatment_id?: number;
-      data?: {
-        treated_areas?: string[];
-        treated_for?: string[];
-        insect_monitor_replaced?: boolean;
-        general_remarks?: string;
-        chemicals?: Array<{
-          chemical_id: number;
-          quantity: number;
-          batch_number: string;
-          batch_number_note?: string;
-        }>;
-      };
+    // Allow treatment operations
+    fumigation_treatments?: Array<{
+      id?: number;
+      treated_areas?: string[];
+      treated_for?: string[];
+      insect_monitor_replaced?: boolean;
+      general_remarks?: string;
+      chemicals?: Array<{
+        id?: number;
+        chemical_id: number;
+        quantity: number;
+        batch_number: string;
+        batch_number_note?: string | null;
+      }>;
     }>;
-  }): Promise<ApiResponse<{ message: string; report_id: string }>> {
+  }): Promise<ApiResponse<{ message: string; report_id?: string }>> {
     try {
-      console.log('🚀 EDIT REPORT API CALL:');
+      console.log('🚀 SIMPLIFIED EDIT REPORT API CALL:');
       console.log('📋 Report ID:', reportId);
       console.log('📊 Request Data:', JSON.stringify(data, null, 2));
       console.log('🔗 Endpoint: PUT /admin/reports/' + reportId);
       
-      const response = await apiClient.put<{ message: string; report_id: string }>(`/admin/reports/${reportId}`, data);
+      // Simplify the data structure - only send what's actually changed
+      const cleanData = Object.fromEntries(
+        Object.entries(data).filter(([, value]) => {
+          if (value === null || value === undefined) return false;
+          if (Array.isArray(value) && value.length === 0) return false;
+          if (typeof value === 'string' && value.trim() === '') return false;
+          return true;
+        })
+      );
       
-      console.log('✅ EDIT REPORT RESPONSE:');
+      console.log('🧹 Cleaned data to send:', JSON.stringify(cleanData, null, 2));
+      
+      const response = await apiClient.put<{ message: string; report_id?: string }>(`/admin/reports/${reportId}`, cleanData);
+      
+      console.log('✅ SIMPLIFIED EDIT REPORT RESPONSE:');
       console.log('📈 Response Status:', response.success ? 'SUCCESS' : 'FAILED');
       console.log('📋 Response Data:', JSON.stringify(response, null, 2));
       console.log('💬 Response Message:', response.message);
@@ -442,7 +203,7 @@ class AdminService {
       
       return response;
     } catch (error) {
-      console.log('💥 EDIT REPORT ERROR:');
+      console.log('💥 SIMPLIFIED EDIT REPORT ERROR:');
       console.log('❌ Error Details:', error);
       console.log('🔍 Error Message:', error instanceof Error ? error.message : 'Unknown error');
       if (error && typeof error === 'object' && 'response' in error) {
@@ -757,39 +518,94 @@ class AdminService {
   async getReport(reportId: number): Promise<ApiResponse<DetailedReport>> {
     try {
       console.log('📊 Admin Service: Getting report details (admin)', reportId);
-      // Use the admin-specific endpoint which includes more detailed data for editing
-      const response = await apiClient.get<{
-        report: DetailedReport;
-        inspection_stations: DetailedReport['inspection_stations'];
-        fumigation_treatments: DetailedReport['fumigation_treatments'];
-      }>(`/admin/reports/${reportId}`);
       
-      console.log('✅ Admin Service: Report details loaded successfully (admin)', response);
+      // Add timeout to prevent hanging
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => {
+        console.error('⏰ Admin Service: getReport timeout after 15 seconds');
+        controller.abort();
+      }, 15000);
       
-      // Transform the admin API response to match our DetailedReport interface
-      if (response.success && response.data) {
-        const transformedReport: DetailedReport = {
-          ...response.data.report,
-          inspection_stations: response.data.inspection_stations || [],
-          fumigation_treatments: response.data.fumigation_treatments || [],
-          // Also set stations for backward compatibility
-          stations: response.data.inspection_stations?.map(station => ({
-            ...station,
-            station_number: station.station_number.toString(),
-            station_condition: [], // Not provided in admin API
-            rodent_box_replaced: false // Not provided in admin API
-          })) || []
-        };
+      try {
+        // Based on API documentation v3, try the admin endpoint first
+        const response = await apiClient.get<DetailedReport>(`/admin/reports/${reportId}`);
         
-        const transformedResponse: ApiResponse<DetailedReport> = {
-          ...response,
-          data: transformedReport
-        };
+        clearTimeout(timeoutId);
+        console.log('✅ Admin Service: Raw API response received');
         
-        return transformedResponse;
+        if (response.success && response.data) {
+          let reportData = response.data;
+          let stationsData: any[] = [];
+          let fumigationData: any = null;
+          
+          // Check if the data is wrapped in another structure (as per admin-report.md)
+          if ('report' in response.data && response.data.report) {
+            console.log('📋 Detected wrapped response structure');
+            const rawReportData = response.data.report as any;
+            reportData = rawReportData;
+            // Get stations and fumigation from separate fields
+            stationsData = (response.data as any).inspection_stations || [];
+            fumigationData = (response.data as any).fumigation_treatments?.[0] || null;
+          } else {
+            // Fallback: check if stations/fumigation are directly on reportData
+            stationsData = (reportData as any).inspection_stations || (reportData as any).stations || [];
+            fumigationData = (reportData as any).fumigation_treatments?.[0] || null;
+          }
+          
+          console.log('📊 Stations found:', stationsData.length);
+          console.log('🧪 Fumigation found:', fumigationData ? 'Yes' : 'No');
+          
+          // Cast to any to access API response fields safely
+          const rawData = reportData as any;
+          
+          // Return simplified processed report - avoid additional API calls for now
+          const processedReport: DetailedReport = {
+            id: rawData.id || 0,
+            client_id: rawData.client_id || 0,
+            pco_id: rawData.pco_id || 0,
+            report_type: rawData.report_type || 'inspection',
+            status: rawData.status || 'pending',
+            overall_remarks: rawData.overall_remarks || '',
+            warning_signs_replaced: rawData.warning_signs_replaced || false,
+            warning_signs_quantity: rawData.warning_signs_quantity || 0,
+            recommendations: rawData.recommendations || '',
+            next_service_date: rawData.next_service_date || '',
+            date_of_service: rawData.date_of_service || '',
+            created_at: rawData.created_at || '',
+            updated_at: rawData.updated_at || '',
+            reviewed_by_name: rawData.reviewed_by_name,
+            reviewed_at: rawData.reviewed_at,
+            admin_notes: rawData.admin_notes,
+            // Build client object from report data or fallback
+            client: {
+              id: rawData.client_id || 0,
+              name: rawData.client_name || 'Unknown Client',
+              address: rawData.client_address || ''
+            },
+            // Build pco object from report data or fallback  
+            pco: {
+              id: rawData.pco_id || 0,
+              name: rawData.pco_name || 'Unknown PCO',
+              pco_number: rawData.pco_number || 'N/A'
+            },
+            // Use the extracted stations and fumigation data
+            inspection_stations: stationsData,
+            fumigation_treatments: fumigationData ? [fumigationData] : [],
+            stations: stationsData
+          };
+          
+          console.log('✅ Admin Service: Returning processed report');
+          return {
+            ...response,
+            data: processedReport
+          };
+        }
+        
+        return response;
+      } catch (error) {
+        clearTimeout(timeoutId);
+        throw error;
       }
-      
-      return response as unknown as ApiResponse<DetailedReport>;
     } catch (error) {
       console.error('❌ Admin Service: Failed to load report details (admin)', error);
       throw error;
@@ -799,7 +615,7 @@ class AdminService {
   async downloadReport(reportId: number): Promise<Blob> {
     try {
       console.log('📄 Admin Service: Downloading report', reportId);
-      const response = await apiClient.post(`/reports/${reportId}/download`, {}, {
+      const response = await apiClient.get(`/admin/reports/${reportId}/download`, {
         responseType: 'blob'
       });
       console.log('✅ Admin Service: Report downloaded successfully');
@@ -1035,6 +851,279 @@ class AdminService {
       throw error;
     }
   }
+
+  async getInactiveChemicals(): Promise<ApiResponse<Chemical[]>> {
+    try {
+      const endpoint = '/admin/chemicals/inactive';
+      console.log('📡 GET INACTIVE CHEMICALS API CALL:');
+      console.log('🔗 Endpoint:', endpoint);
+      console.log('🚀 Full URL would be: ${BASE_URL}' + endpoint);
+      
+      const response = await apiClient.get<Chemical[]>(endpoint);
+      
+      console.log('✅ Inactive chemicals response:', response);
+      console.log('📊 Response status:', response.success ? 'SUCCESS' : 'FAILED');
+      if (response.data && Array.isArray(response.data)) {
+        console.log('🧪 Number of inactive chemicals returned:', response.data.length || 0);
+        console.log('📄 Inactive chemicals data preview:', response.data.slice(0, 2));
+      }
+      
+      return response;
+    } catch (error) {
+      console.error('❌ Get inactive chemicals error:', error);
+      throw error;
+    }
+  }
+
+  async permanentDeleteChemical(id: number): Promise<ApiResponse<{ message: string; deleted_chemical: { id: number; name: string; l_number: string } }>> {
+    try {
+      const endpoint = `/admin/chemicals/${id}/delete`;
+      console.log('📡 PERMANENT DELETE CHEMICAL API CALL:');
+      console.log('🔗 Endpoint:', endpoint);
+      console.log('📦 Chemical ID:', id);
+      console.log('🚀 Full URL would be: ${BASE_URL}' + endpoint);
+      
+      const response = await apiClient.delete<{ message: string; deleted_chemical: { id: number; name: string; l_number: string } }>(endpoint);
+      
+      console.log('✅ Permanent delete chemical response:', response);
+      console.log('📊 Response status:', response.success ? 'SUCCESS' : 'FAILED');
+      if (response.data) {
+        console.log('📄 Response data:', JSON.stringify(response.data, null, 2));
+      }
+      
+      return response;
+    } catch (error) {
+      console.error('❌ Permanent delete chemical error:', error);
+      throw error;
+    }
+  }
+
+  // Report-specific admin methods based on admin-report.md
+  async deleteReport(reportId: number, force?: boolean): Promise<ApiResponse<{ message: string }>> {
+    try {
+      const queryParams = force ? '?force=1' : '';
+      const endpoint = `/admin/reports/${reportId}${queryParams}`;
+      console.log('🗑️ DELETE REPORT API CALL:');
+      console.log('🔗 Endpoint:', endpoint);
+      console.log('📦 Report ID:', reportId);
+      console.log('⚡ Force delete:', force);
+      
+      const response = await apiClient.delete<{ message: string }>(endpoint);
+      
+      console.log('✅ Delete report response:', response);
+      console.log('📊 Response status:', response.success ? 'SUCCESS' : 'FAILED');
+      if (response.data) {
+        console.log('📄 Response message:', response.data.message);
+      }
+      
+      return response;
+    } catch (error) {
+      console.error('❌ Delete report error:', error);
+      throw error;
+    }
+  }
+
+  async emailReport(
+    reportId: number, 
+    options?: {
+      cc?: string[];
+      additional_message?: string;
+    }
+  ): Promise<ApiResponse<{ message: string; recipient: string }>> {
+    try {
+      const endpoint = `/admin/reports/${reportId}/email`;
+      console.log('📧 EMAIL REPORT API CALL:');
+      console.log('🔗 Endpoint:', endpoint);
+      console.log('📦 Report ID:', reportId);
+      console.log('📋 Options:', options);
+      
+      const response = await apiClient.post<{ message: string; recipient: string }>(endpoint, options || {});
+      
+      console.log('✅ Email report response:', response);
+      console.log('📊 Response status:', response.success ? 'SUCCESS' : 'FAILED');
+      if (response.data) {
+        console.log('📄 Response data:', JSON.stringify(response.data, null, 2));
+      }
+      
+      return response;
+    } catch (error) {
+      console.error('❌ Email report error:', error);
+      throw error;
+    }
+  }
+
+  async downloadReportPDF(reportId: number): Promise<Blob> {
+    try {
+      console.log('📄 Admin Service: Downloading report PDF', reportId);
+      const blob = await apiClient.getBlob(`/admin/reports/${reportId}/download`);
+      console.log('✅ Admin Service: Report PDF downloaded successfully');
+      console.log('📄 Blob type:', typeof blob);
+      console.log('📄 Blob constructor:', blob.constructor.name);
+      console.log('📄 Blob size:', blob.size);
+      return blob;
+    } catch (error) {
+      console.error('❌ Admin Service: Failed to download report PDF', error);
+      throw error;
+    }
+  }
+
+  async getReportStats(): Promise<ApiResponse<{
+    overview: {
+      total_reports: number;
+      draft_reports: number;
+      pending_reports: number;
+      approved_reports: number;
+      declined_reports: number;
+      archived_reports: number;
+      inspection_reports: number;
+      fumigation_reports: number;
+      combined_reports: number;
+    };
+    draft_analysis: {
+      total_drafts: number;
+      old_drafts_30_days: number;
+      old_drafts_7_days: number;
+      new_drafts_24h: number;
+    };
+    recent_activity: Array<{
+      status: string;
+      count: number;
+      date: string;
+    }>;
+  }>> {
+    try {
+      const endpoint = '/admin/reports/stats';
+      console.log('📊 GET REPORT STATS API CALL:');
+      console.log('🔗 Endpoint:', endpoint);
+      
+      const response = await apiClient.get<{
+        overview: {
+          total_reports: number;
+          draft_reports: number;
+          pending_reports: number;
+          approved_reports: number;
+          declined_reports: number;
+          archived_reports: number;
+          inspection_reports: number;
+          fumigation_reports: number;
+          combined_reports: number;
+        };
+        draft_analysis: {
+          total_drafts: number;
+          old_drafts_30_days: number;
+          old_drafts_7_days: number;
+          new_drafts_24h: number;
+        };
+        recent_activity: Array<{
+          status: string;
+          count: number;
+          date: string;
+        }>;
+      }>(endpoint);
+      
+      console.log('✅ Report stats response:', response);
+      console.log('📊 Response status:', response.success ? 'SUCCESS' : 'FAILED');
+      if (response.data) {
+        console.log('📄 Stats data:', JSON.stringify(response.data, null, 2));
+      }
+      
+      return response;
+    } catch (error) {
+      console.error('❌ Get report stats error:', error);
+      throw error;
+    }
+  }
+
+  async bulkOperations(operation: 'update_status' | 'delete', data: {
+    report_ids: number[];
+    status?: string;
+    admin_notes?: string;
+  }): Promise<ApiResponse<{
+    message: string;
+    operation: string;
+    results: Array<{
+      report_id: number;
+      status: 'success' | 'error';
+      message?: string;
+    }>;
+  }>> {
+    try {
+      const endpoint = '/admin/reports/bulk';
+      console.log('🔄 BULK OPERATIONS API CALL:');
+      console.log('🔗 Endpoint:', endpoint);
+      console.log('📦 Operation:', operation);
+      console.log('📊 Data:', JSON.stringify(data, null, 2));
+      
+      const requestData = {
+        operation,
+        ...data
+      };
+      
+      const response = await apiClient.post<{
+        message: string;
+        operation: string;
+        results: Array<{
+          report_id: number;
+          status: 'success' | 'error';
+          message?: string;
+        }>;
+      }>(endpoint, requestData);
+      
+      console.log('✅ Bulk operations response:', response);
+      console.log('📊 Response status:', response.success ? 'SUCCESS' : 'FAILED');
+      if (response.data) {
+        console.log('📄 Response data:', JSON.stringify(response.data, null, 2));
+      }
+      
+      return response;
+    } catch (error) {
+      console.error('❌ Bulk operations error:', error);
+      throw error;
+    }
+  }
+
+  async cleanupOldDrafts(): Promise<ApiResponse<{
+    message: string;
+    cleaned_count: number;
+    cutoff_date: string;
+  }>> {
+    try {
+      const endpoint = '/admin/reports/cleanup';
+      console.log('🧹 CLEANUP OLD DRAFTS API CALL:');
+      console.log('🔗 Endpoint:', endpoint);
+      
+      const response = await apiClient.post<{
+        message: string;
+        cleaned_count: number;
+        cutoff_date: string;
+      }>(endpoint, {});
+      
+      console.log('✅ Cleanup old drafts response:', response);
+      console.log('📊 Response status:', response.success ? 'SUCCESS' : 'FAILED');
+      if (response.data) {
+        console.log('📄 Response data:', JSON.stringify(response.data, null, 2));
+      }
+      
+      return response;
+    } catch (error) {
+      console.error('❌ Cleanup old drafts error:', error);
+      throw error;
+    }
+  }
 }
 
 export const adminService = new AdminService();
+
+// Re-export types for convenience
+export type {
+  AdminDashboardData,
+  Client,
+  AdminClientsResponse,
+  DetailedReport,
+  AdminReportsResponse,
+  ClientNote,
+  Assignment,
+  User,
+  Chemical,
+  ChemicalStats
+} from '../types/admin';

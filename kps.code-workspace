@@ -7,5 +7,7 @@
 			"path": "../../pest/docs/simplified"
 		}
 	],
-	"settings": {}
+	"settings": {
+		"powershell.cwd": "kps"
+	}
 }

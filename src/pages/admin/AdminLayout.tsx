@@ -7,6 +7,8 @@ import { ClientsPage } from './ClientsPage';
 import { ChemicalsPage } from './ChemicalsPage';
 import { ReportsPage } from './ReportsPage';
 import { ReportEdit } from './ReportEdit';
+import { ReportView } from './ReportView';
+import { AnalyticsPage } from './AnalyticsPage';
 
 export const AdminLayout: React.FC = () => {
   return (
@@ -21,7 +23,9 @@ export const AdminLayout: React.FC = () => {
             <Route path="/clients" element={<ClientsPage />} />
             <Route path="/chemicals" element={<ChemicalsPage />} />
             <Route path="/reports" element={<ReportsPage />} />
+            <Route path="/reports/:reportId" element={<ReportView />} />
             <Route path="/reports/:reportId/edit" element={<ReportEdit />} />
+            <Route path="/analytics" element={<AnalyticsPage />} />
             <Route path="/settings" element={<div className="w-full h-full flex items-center justify-center p-6">Settings Page Coming Soon</div>} />
             {/* Redirect any unknown admin routes to dashboard */}
             <Route path="*" element={<Navigate to="/admin" replace />} />

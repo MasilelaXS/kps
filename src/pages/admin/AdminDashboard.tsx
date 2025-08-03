@@ -7,7 +7,6 @@ import {
   FileText, 
   UserPlus,
   AlertTriangle,
-  CheckCircle,
   Loader2
 } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
@@ -32,7 +31,15 @@ export const AdminDashboard: React.FC = () => {
       const response = await adminService.getDashboard();
       
       if (response.success && response.data) {
-        setDashboardData(response.data);
+        // Ensure arrays have default values
+        const data = {
+          ...response.data,
+          recent_activity: response.data.recent_activity || [],
+          top_pcos: response.data.top_pcos || [],
+          assigned_clients: response.data.assigned_clients || [],
+          upcoming_service_clients: response.data.upcoming_service_clients || []
+        };
+        setDashboardData(data);
       } else {
         setError('Failed to load dashboard data');
       }
@@ -91,28 +98,16 @@ export const AdminDashboard: React.FC = () => {
         <>
           {/* Stats Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-              {/* Total Clients */}
+              {/* Total Users */}
               <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600">Total Clients</p>
+                    <p className="text-sm text-gray-600">Total Users</p>
                     <p className="text-2xl font-bold text-gray-800">
-                      {formatNumber(dashboardData.summary.total_clients)}
+                      {formatNumber(dashboardData.summary.users.total_users)}
                     </p>
-                  </div>
-                  <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                    <Building2 className="h-6 w-6 text-green-600" />
-                  </div>
-                </div>
-              </div>
-
-              {/* Active PCOs */}
-              <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-600">Active PCOs</p>
-                    <p className="text-2xl font-bold text-gray-800">
-                      {formatNumber(dashboardData.summary.active_pcos)}
+                    <p className="text-xs text-gray-500 mt-1">
+                      {dashboardData.summary.users.pco_count} PCOs, {dashboardData.summary.users.admin_count} Admins
                     </p>
                   </div>
                   <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
@@ -121,13 +116,52 @@ export const AdminDashboard: React.FC = () => {
                 </div>
               </div>
 
+              {/* Total Clients */}
+              <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600">Total Clients</p>
+                    <p className="text-2xl font-bold text-gray-800">
+                      {formatNumber(dashboardData.summary.clients.total_clients)}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {dashboardData.summary.clients.new_clients_30days} new this month
+                    </p>
+                  </div>
+                  <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                    <Building2 className="h-6 w-6 text-green-600" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Total Reports */}
+              <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600">Total Reports</p>
+                    <p className="text-2xl font-bold text-gray-800">
+                      {formatNumber(dashboardData.summary.reports.total_reports)}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {dashboardData.summary.reports.reports_this_month} this month
+                    </p>
+                  </div>
+                  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <FileText className="h-6 w-6 text-blue-600" />
+                  </div>
+                </div>
+              </div>
+
               {/* Pending Reports */}
               <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600">Pending Reports</p>
+                    <p className="text-sm text-gray-600">Reports Status</p>
                     <p className="text-2xl font-bold text-gray-800">
-                      {formatNumber(dashboardData.summary.pending_reports)}
+                      {formatNumber(dashboardData.summary.reports.pending_reports)}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {dashboardData.summary.reports.approved_reports} approved, {dashboardData.summary.reports.declined_reports} declined
                     </p>
                   </div>
                   <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
@@ -135,52 +169,111 @@ export const AdminDashboard: React.FC = () => {
                   </div>
                 </div>
               </div>
-
-              {/* Completed Reports */}
-              <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-600">Completed Reports</p>
-                    <p className="text-2xl font-bold text-gray-800">
-                      {formatNumber(dashboardData.summary.completed_reports)}
-                    </p>
-                  </div>
-                  <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                    <CheckCircle className="h-6 w-6 text-green-600" />
-                  </div>
-                </div>
-              </div>
           </div>            {/* Two Column Layout */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Recent Reports */}
+              {/* Recent Activity */}
               <div className="bg-white rounded-xl shadow-sm border border-gray-100">
                 <div className="p-6 border-b border-gray-100">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold text-gray-800">Recent Reports</h3>
+                    <h3 className="text-lg font-semibold text-gray-800">Recent Activity</h3>
                     <FileText className="h-5 w-5 text-purple-500" />
                   </div>
                 </div>
                 <div className="p-6">
-                  {!dashboardData.recent_reports || dashboardData.recent_reports.length === 0 ? (
+                  {!dashboardData.recent_activity || dashboardData.recent_activity.length === 0 ? (
                     <div className="text-center py-8">
                       <FileText className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                      <p className="text-gray-600">No recent reports</p>
+                      <p className="text-gray-600">No recent activity</p>
                     </div>
                   ) : (
                     <div className="space-y-4">
-                      <p className="text-gray-600">Recent report activity will be displayed here</p>
+                      {dashboardData.recent_activity.slice(0, 5).map((activity) => (
+                        <div key={activity.id} className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
+                          <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${
+                            activity.status === 'approved' ? 'bg-green-500' :
+                            activity.status === 'declined' ? 'bg-red-500' :
+                            'bg-yellow-500'
+                          }`} />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-gray-900">
+                              {activity.report_type === 'fumigation' ? '🔬' : '🔍'} {activity.report_type.charAt(0).toUpperCase() + activity.report_type.slice(1)} Report
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              {activity.client_name} • {activity.pco_name}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {new Date(activity.created_at).toLocaleDateString()} • 
+                              <span className={`ml-1 capitalize ${
+                                activity.status === 'approved' ? 'text-green-600' :
+                                activity.status === 'declined' ? 'text-red-600' :
+                                'text-yellow-600'
+                              }`}>
+                                {activity.status}
+                              </span>
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                      {dashboardData.recent_activity.length > 5 && (
+                        <div className="text-center">
+                          <Link 
+                            to="/admin/reports" 
+                            className="text-purple-600 hover:text-purple-700 text-sm font-medium"
+                          >
+                            View all reports →
+                          </Link>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* Quick Actions */}
+              {/* Top PCOs */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100">
+                <div className="p-6 border-b border-gray-100">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold text-gray-800">Top PCOs</h3>
+                    <Users className="h-5 w-5 text-purple-500" />
+                  </div>
+                </div>
+                <div className="p-6">
+                  {!dashboardData.top_pcos || dashboardData.top_pcos.length === 0 ? (
+                    <div className="text-center py-8">
+                      <Users className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                      <p className="text-gray-600">No PCO data available</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {dashboardData.top_pcos.map((pco, index) => (
+                        <div key={pco.id} className="flex items-center space-x-4 p-3 bg-gray-50 rounded-lg">
+                          <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 font-semibold text-sm">
+                            #{index + 1}
+                          </div>
+                          <div className="flex-1">
+                            <p className="font-medium text-gray-900">{pco.name}</p>
+                            <p className="text-sm text-gray-600">{pco.pco_number}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm font-semibold text-gray-900">{pco.total_reports} reports</p>
+                            <p className="text-xs text-green-600">{pco.approval_rate}% approval</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="mt-8">
               <div className="bg-white rounded-xl shadow-sm border border-gray-100">
                 <div className="p-6 border-b border-gray-100">
                   <h3 className="text-lg font-semibold text-gray-800">Quick Actions</h3>
                 </div>
                 <div className="p-6">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <Link
                       to="/admin/users"
                       className="flex flex-col items-center p-4 bg-purple-50 rounded-lg border border-purple-200 hover:bg-purple-100 transition-colors"

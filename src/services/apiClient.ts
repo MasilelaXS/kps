@@ -23,7 +23,7 @@ class ApiClient {
 
   constructor() {
     this.client = axios.create({
-      baseURL: '/api',
+      baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
       timeout: 10000,
       headers: {
         'Content-Type': 'application/json',
@@ -66,8 +66,8 @@ class ApiClient {
           data: error.response?.data,
           message: error.message
         });
-        // Handle 401 unauthorized - redirect to login (no token management needed)
-        if (error.response?.status === 401) {
+        // Handle 401 unauthorized - redirect to login only if not already on login page
+        if (error.response?.status === 401 && !window.location.pathname.includes('/login')) {
           window.location.href = '/login';
         }
         return Promise.reject(error);
@@ -104,6 +104,12 @@ class ApiClient {
 
   async delete<T>(url: string, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
     const response = await this.client.delete(url, config);
+    return response.data;
+  }
+
+  // Special method for blob downloads that doesn't wrap in ApiResponse
+  async getBlob(url: string, config?: AxiosRequestConfig): Promise<Blob> {
+    const response = await this.client.get(url, { ...config, responseType: 'blob' });
     return response.data;
   }
 }
