@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>KPS Icon Generator</title>
+</head>
+<body>
+    <canvas id="canvas192" width="192" height="192" style="border: 1px solid #ccc; margin: 10px;"></canvas>
+    <canvas id="canvas512" width="512" height="512" style="border: 1px solid #ccc; margin: 10px;"></canvas>
+    <canvas id="canvasIcon" width="48" height="48" style="border: 1px solid #ccc; margin: 10px;"></canvas>
+    
+    <script>
+        function createKPSIcon(canvas, size, fontSize) {
+            const ctx = canvas.getContext('2d');
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, size, size);
+            
+            // Draw square background with rounded corners
+            const radius = size * 0.125; // 12.5% rounded corners
+            ctx.fillStyle = '#2563eb';
+            ctx.beginPath();
+            ctx.roundRect(0, 0, size, size, radius);
+            ctx.fill();
+            
+            // Draw KPS text
+            ctx.fillStyle = 'white';
+            ctx.font = `bold ${fontSize}px Arial, sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('KPS', size / 2, size / 2);
+        }
+        
+        // Create icons
+        createKPSIcon(document.getElementById('canvas192'), 192, 54);
+        createKPSIcon(document.getElementById('canvas512'), 512, 140);
+        createKPSIcon(document.getElementById('canvasIcon'), 48, 14);
+        
+        // Function to download canvas as PNG
+        function downloadCanvas(canvasId, filename) {
+            const canvas = document.getElementById(canvasId);
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+        
+        // Add download buttons
+        const body = document.body;
+        
+        ['192.png', '512.png', 'icon.png'].forEach((filename, index) => {
+            const canvasIds = ['canvas192', 'canvas512', 'canvasIcon'];
+            const button = document.createElement('button');
+            button.textContent = `Download ${filename}`;
+            button.onclick = () => downloadCanvas(canvasIds[index], filename);
+            button.style.margin = '10px';
+            button.style.padding = '10px';
+            body.appendChild(button);
+        });
+    </script>
+</body>
+</html>

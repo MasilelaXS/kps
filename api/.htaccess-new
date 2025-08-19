@@ -1,0 +1,26 @@
+RewriteEngine On
+
+# Handle CORS preflight requests first
+RewriteCond %{REQUEST_METHOD} OPTIONS
+RewriteRule ^(.*)$ index.php [QSA,L]
+
+# Route all API requests to index.php (your PHP router)
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php [QSA,L]
+
+# Set headers for API responses
+Header always set Access-Control-Allow-Origin "*"
+Header always set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS, PATCH"
+Header always set Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With, Accept, Origin"
+Header always set Access-Control-Max-Age "3600"
+
+# Ensure proper content type for JSON responses
+<FilesMatch "\.php$">
+    Header set Content-Type "application/json; charset=UTF-8"
+</FilesMatch>
+
+# Security headers for API
+Header always set X-Content-Type-Options "nosniff"
+Header always set X-Frame-Options "DENY"
+Header always set X-XSS-Protection "1; mode=block"

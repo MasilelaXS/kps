@@ -1,0 +1,39 @@
+RewriteEngine On
+
+# Handle CORS for all requests
+Header always set Access-Control-Allow-Origin "*"
+Header always set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+Header always set Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With"
+
+# Handle CORS preflight requests
+RewriteCond %{REQUEST_METHOD} OPTIONS
+RewriteRule ^(.*)$ - [R=200,L]
+
+# Route API requests to the api directory - MUST come first
+RewriteRule ^api/(.*)$ api/$1 [L]
+
+# Serve the React app files from dist directory
+# First, try to serve static files directly
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{DOCUMENT_ROOT}/dist/$1 -f
+RewriteRule ^(.*)$ dist/$1 [L]
+
+# If it's not a static file and not an API route, serve React's index.html
+# This handles all React Router routes
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_URI} !^/api/
+RewriteRule . dist/index.html [L]
+
+# Cache static assets
+<FilesMatch "\.(css|js|json|svg|png|jpg|jpeg|gif|ico|woff|woff2|ttf|eot)$">
+    Header set Cache-Control "public, max-age=31536000"
+</FilesMatch>
+
+# Don't cache HTML files
+<FilesMatch "\.html$">
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+    Header set Pragma "no-cache"
+    Header set Expires "0"
+</FilesMatch>

@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../../pest/docs/simplified"
+		}
+	],
+	"settings": {
+		"powershell.cwd": "kps"
+	}
+}
