@@ -48,7 +48,7 @@ interface EditableStation {
   activity_type_other: string;
   activity_description: string;
   station_condition: string[];
-  bait_status: 'untouched' | 'partially_consumed' | 'fully_consumed' | 'moldy' | 'missing';
+  bait_status: 'untouched' | 'partially_consumed' | 'fully_consumed' | 'wet' | 'missing';
   rodent_box_replaced: boolean;
   poison_used_id: number;
   poison_quantity: number;
@@ -99,7 +99,7 @@ const BAIT_STATUS_OPTIONS = [
   { key: 'untouched', label: 'Untouched' },
   { key: 'partially_consumed', label: 'Partially Consumed' },
   { key: 'fully_consumed', label: 'Fully Consumed' },
-  { key: 'moldy', label: 'Moldy' },
+  { key: 'wet', label: 'Wet' },
   { key: 'missing', label: 'Missing' }
 ];
 

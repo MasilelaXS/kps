@@ -230,7 +230,7 @@ export interface DetailedReport {
     has_activity: boolean;
     activity_type: 'droppings' | 'gnawing' | 'tracks' | 'other' | null;
     activity_description?: string;
-    bait_status: 'eaten' | 'partially_eaten' | 'untouched' | 'moldy';
+    bait_status: 'eaten' | 'partially_eaten' | 'untouched' | 'wet';
     poison_used_id: number;
     poison_quantity: number;
     batch_number: string;

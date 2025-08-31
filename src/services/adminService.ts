@@ -149,7 +149,7 @@ class AdminService {
       activity_type?: 'droppings' | 'gnawing' | 'tracks' | 'other' | null;
       activity_description?: string;
       station_condition?: string[];
-      bait_status?: 'eaten' | 'partially_eaten' | 'untouched' | 'moldy';
+      bait_status?: 'eaten' | 'partially_eaten' | 'untouched' | 'wet';
       rodent_box_replaced?: boolean;
       poison_used_id?: number;
       poison_quantity?: number;

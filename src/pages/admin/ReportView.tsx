@@ -209,7 +209,7 @@ export const ReportView: React.FC = () => {
       case 'untouched': return 'success';
       case 'partially_consumed': return 'warning';
       case 'fully_consumed': return 'danger';
-      case 'moldy': return 'secondary';
+      case 'wet': return 'secondary';
       case 'missing': return 'danger';
       default: return 'default';
     }
