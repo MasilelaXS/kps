@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, ArrowRight, Plus, Edit, Trash2, Zap } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Plus, Edit, Trash2, Zap, Monitor } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useMobileStore } from '../../../../stores/mobileStore';
-import type { FumigationChemical, FumigationChemicalForm } from '../../../../types/mobile';
+import type { FumigationChemical, FumigationChemicalForm, InsectMonitor } from '../../../../types/mobile';
 
 export const FumigationForm: React.FC = () => {
   const navigate = useNavigate();
@@ -33,6 +33,17 @@ export const FumigationForm: React.FC = () => {
   const [treatedFor, setTreatedFor] = useState<string[]>([]);
   const [insectMonitorReplaced, setInsectMonitorReplaced] = useState<boolean>(false);
   const [generalRemarks, setGeneralRemarks] = useState('');
+
+  // Insect Monitor Management
+  const [insectMonitors, setInsectMonitors] = useState<InsectMonitor[]>([]);
+  const [isMonitorModalOpen, setIsMonitorModalOpen] = useState(false);
+  const [editingMonitorIndex, setEditingMonitorIndex] = useState<number | null>(null);
+  const [currentMonitor, setCurrentMonitor] = useState<InsectMonitor>({
+    type: 'box',
+    glue_board: '1',
+    serviced: false,
+    tubes: undefined,
+  });
 
   // Predefined options for treated areas
   const areaOptions = [
@@ -74,6 +85,7 @@ export const FumigationForm: React.FC = () => {
       setTreatedFor(fumigationData.treated_for || fumigationData.target_pests || []);
       setInsectMonitorReplaced(fumigationData.insect_monitor_replaced === 1);
       setGeneralRemarks(fumigationData.general_remarks || fumigationData.fumigation_notes || '');
+      setInsectMonitors(fumigationData.insect_monitors || []);
     }
   }, [reportInProgress, currentReport, navigate]);
 
@@ -140,7 +152,56 @@ export const FumigationForm: React.FC = () => {
     }
   };
 
+  // Insect Monitor Management Functions
+  const handleAddMonitor = () => {
+    setEditingMonitorIndex(null);
+    setCurrentMonitor({
+      type: 'box',
+      glue_board: '1',
+      serviced: false,
+      tubes: undefined,
+    });
+    setIsMonitorModalOpen(true);
+  };
+
+  const handleEditMonitor = (index: number) => {
+    const monitor = insectMonitors[index];
+    setEditingMonitorIndex(index);
+    setCurrentMonitor({ ...monitor });
+    setIsMonitorModalOpen(true);
+  };
+
+  const handleSaveMonitor = () => {
+    console.log('Saving monitor:', currentMonitor);
+
+    if (editingMonitorIndex !== null) {
+      const updatedMonitors = [...insectMonitors];
+      updatedMonitors[editingMonitorIndex] = { ...currentMonitor };
+      setInsectMonitors(updatedMonitors);
+    } else {
+      setInsectMonitors([...insectMonitors, { ...currentMonitor }]);
+    }
+
+    setIsMonitorModalOpen(false);
+  };
+
+  const handleDeleteMonitor = (index: number) => {
+    if (confirm('Are you sure you want to remove this insect monitor?')) {
+      const updatedMonitors = insectMonitors.filter((_, i) => i !== index);
+      setInsectMonitors(updatedMonitors);
+    }
+  };
+
   const handleSave = () => {
+    console.log('Saving fumigation data:', {
+      treated_areas: treatedAreas,
+      treated_for: treatedFor,
+      insect_monitor_replaced: insectMonitorReplaced ? 1 : 0,
+      general_remarks: generalRemarks,
+      insect_monitors: insectMonitors,
+      chemicals_count: fumigationChemicals.length
+    });
+
     // Save data according to mobile-report.md API structure
     updateReportData({
       fumigation: {
@@ -151,6 +212,7 @@ export const FumigationForm: React.FC = () => {
         fumigation_notes: generalRemarks.trim(),
         insect_monitor_replaced: insectMonitorReplaced ? 1 : 0,
         general_remarks: generalRemarks.trim(),
+        insect_monitors: insectMonitors,
         chemicals_used: fumigationChemicals.map(chemical => ({
           chemical_id: chemical.chemical_id,
           quantity: chemical.quantity,
@@ -372,19 +434,91 @@ export const FumigationForm: React.FC = () => {
         </p>
       </div>
 
-      {/* Insect Monitor Replaced */}
+      {/* Insect Monitors Management */}
       <div className="bg-white rounded p-3 space-y-3">
-        <h3 className="text-sm font-medium text-gray-900">Insect Monitor</h3>
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-medium text-gray-900">Insect Monitors</h3>
+          <button
+            onClick={handleAddMonitor}
+            className="flex items-center gap-1 px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            <Plus className="w-3 h-3" />
+            Add Monitor
+          </button>
+        </div>
+
+        {insectMonitors.length > 0 ? (
+          <div className="space-y-2">
+            {insectMonitors.map((monitor, index) => (
+              <div key={index} className="border border-gray-200 rounded p-3">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Monitor className="w-4 h-4 text-blue-500" />
+                      <h4 className="text-sm font-medium text-gray-900">
+                        {monitor.type === 'box' ? 'Box Monitor' : 'Light Monitor'}
+                      </h4>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3 text-xs">
+                      <div>
+                        <p className="text-gray-500">Glue Board</p>
+                        <p className="font-medium text-gray-900">{monitor.glue_board}</p>
+                      </div>
+                      
+                      <div>
+                        <p className="text-gray-500">Serviced</p>
+                        <p className="font-medium text-gray-900">
+                          {monitor.serviced ? 'Yes' : 'No'}
+                        </p>
+                      </div>
+
+                      {monitor.type === 'light' && monitor.tubes && (
+                        <div className="col-span-2">
+                          <p className="text-gray-500">Tubes</p>
+                          <p className="font-medium text-gray-900">{monitor.tubes}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex gap-1 ml-3">
+                    <button
+                      onClick={() => handleEditMonitor(index)}
+                      className="p-1 hover:bg-gray-50 rounded"
+                    >
+                      <Edit className="w-3 h-3 text-gray-500" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteMonitor(index)}
+                      className="p-1 hover:bg-gray-50 rounded"
+                    >
+                      <Trash2 className="w-3 h-3 text-red-500" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-4 text-gray-500">
+            <Monitor className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+            <p className="text-sm">No insect monitors added</p>
+            <p className="text-xs">Click "Add Monitor" to start tracking insect monitoring devices</p>
+          </div>
+        )}
+
+        {/* Legacy checkbox for backward compatibility */}
         <label className="flex items-center gap-2 p-2 border border-gray-200 rounded cursor-pointer hover:bg-gray-50">
           <input
             type="checkbox"
             checked={insectMonitorReplaced}
             onChange={(e) => setInsectMonitorReplaced(e.target.checked)}
           />
-          <span className="text-sm">Insect monitor replaced during treatment</span>
+          <span className="text-sm">General insect monitor replacement during treatment</span>
         </label>
         <p className="text-xs text-gray-500">
-          Check if insect monitoring devices were replaced during the fumigation.
+          Add specific insect monitors above or use the general checkbox for backward compatibility.
         </p>
       </div>
 
@@ -520,6 +654,107 @@ export const FumigationForm: React.FC = () => {
                 className="flex-1 px-3 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
               >
                 {editingIndex !== null ? 'Update Chemical' : 'Add Chemical'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Insect Monitor Modal */}
+      {isMonitorModalOpen && (
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white/95 backdrop-blur-md border border-white/20 shadow-xl rounded-lg max-w-lg w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-4 border-b">
+              <h3 className="text-base font-medium text-gray-900">
+                {editingMonitorIndex !== null ? 'Edit Insect Monitor' : 'Add Insect Monitor'}
+              </h3>
+            </div>
+            
+            <div className="p-4 space-y-4">
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">Monitor Type *</label>
+                <select
+                  value={currentMonitor.type}
+                  onChange={(e) => setCurrentMonitor(prev => ({ 
+                    ...prev, 
+                    type: e.target.value as 'box' | 'light',
+                    tubes: e.target.value === 'light' ? prev.tubes || 1 : undefined
+                  }))}
+                  className="w-full p-2 border border-gray-200 rounded text-sm"
+                  required
+                >
+                  <option value="box">Box Monitor</option>
+                  <option value="light">Light Monitor</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">Glue Board *</label>
+                <select
+                  value={currentMonitor.glue_board}
+                  onChange={(e) => setCurrentMonitor(prev => ({ 
+                    ...prev, 
+                    glue_board: e.target.value
+                  }))}
+                  className="w-full p-2 border border-gray-200 rounded text-sm"
+                  required
+                >
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+
+              {currentMonitor.type === 'light' && (
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">Number of Tubes</label>
+                  <input
+                    type="number"
+                    min="1"
+                    placeholder="1"
+                    value={currentMonitor.tubes || ''}
+                    onChange={(e) => setCurrentMonitor(prev => ({ 
+                      ...prev, 
+                      tubes: parseInt(e.target.value) || undefined
+                    }))}
+                    className="w-full p-2 border border-gray-200 rounded text-sm"
+                  />
+                </div>
+              )}
+
+              <div>
+                <label className="flex items-center gap-2 p-2 border border-gray-200 rounded cursor-pointer hover:bg-gray-50">
+                  <input
+                    type="checkbox"
+                    checked={currentMonitor.serviced}
+                    onChange={(e) => setCurrentMonitor(prev => ({ 
+                      ...prev, 
+                      serviced: e.target.checked
+                    }))}
+                  />
+                  <span className="text-sm">Monitor was serviced</span>
+                </label>
+                <p className="text-xs text-gray-500 mt-1">
+                  Check if this monitor was serviced during the treatment.
+                </p>
+              </div>
+            </div>
+            
+            <div className="p-4 border-t flex gap-2">
+              <button
+                onClick={() => setIsMonitorModalOpen(false)}
+                className="flex-1 px-3 py-2 border border-gray-200 rounded text-sm hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveMonitor}
+                className="flex-1 px-3 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
+              >
+                {editingMonitorIndex !== null ? 'Update Monitor' : 'Add Monitor'}
               </button>
             </div>
           </div>

@@ -1,8 +1,9 @@
-import React, { useEffect } from 'react';
-import { ArrowLeft, ArrowRight, Calendar, User, Building, CheckCircle } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { ArrowLeft, ArrowRight, Calendar, User, Building, CheckCircle, Signature } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useMobileStore } from '../../../../stores/mobileStore';
 import { useAuthStore } from '../../../../stores/authStore';
+import SignatureCanvas from 'react-signature-canvas';
 
 export const BasicInfoStep: React.FC = () => {
   const navigate = useNavigate();
@@ -14,6 +15,11 @@ export const BasicInfoStep: React.FC = () => {
     updateReportData,
     clearCurrentReport
   } = useMobileStore();
+
+  // PCO Signature state
+  const signatureRef = useRef<SignatureCanvas>(null);
+  const [showSignature, setShowSignature] = useState(false);
+  const [pcoSignature, setPcoSignature] = useState<string>('');
 
   useEffect(() => {
     console.log('BasicInfoStep mounted - checking report state:', { 
@@ -48,7 +54,47 @@ export const BasicInfoStep: React.FC = () => {
     }
   }, [reportInProgress, currentReport, navigate, user, updateReportData]);
 
+  // Load existing PCO signature if available
+  useEffect(() => {
+    if (currentReport?.pco_signature) {
+      setPcoSignature(currentReport.pco_signature);
+    }
+  }, [currentReport?.pco_signature]);
+
+  // PCO Signature Functions
+  const handleSaveSignature = () => {
+    if (signatureRef.current) {
+      const signatureData = signatureRef.current.toDataURL();
+      setPcoSignature(signatureData);
+      setShowSignature(false);
+      
+      // Save to report data
+      updateReportData({ pco_signature: signatureData });
+      
+      console.log('PCO signature saved:', {
+        pco_name: user?.name,
+        signature_length: signatureData.length
+      });
+    }
+  };
+
+  const handleClearSignature = () => {
+    if (signatureRef.current) {
+      signatureRef.current.clear();
+    }
+  };
+
+  const handleRemoveSignature = () => {
+    setPcoSignature('');
+    updateReportData({ pco_signature: '' });
+  };
+
   const handleNext = () => {
+    console.log('Proceeding to next step with PCO signature:', {
+      has_signature: !!pcoSignature,
+      signature_length: pcoSignature.length
+    });
+
     if (!currentReport) return;
 
     // Navigate to the appropriate next step based on report type using URL parameters
@@ -176,6 +222,94 @@ export const BasicInfoStep: React.FC = () => {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* PCO Signature */}
+      <div className="space-y-3">
+        <h3 className="text-sm font-medium text-gray-900">PCO Signature</h3>
+        
+        {!showSignature && !pcoSignature && (
+          <div className="text-center py-6 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50">
+            <Signature className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+            <p className="text-sm text-gray-600 mb-3">Add your signature to this report</p>
+            <button
+              onClick={() => setShowSignature(true)}
+              className="px-4 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
+            >
+              Add Signature
+            </button>
+          </div>
+        )}
+
+        {showSignature && (
+          <div className="border border-gray-200 rounded-lg p-3">
+            <div className="mb-3">
+              <p className="text-sm font-medium text-gray-900 mb-1">Draw your signature</p>
+              <p className="text-xs text-gray-500">Sign below to authorize this report</p>
+            </div>
+            
+            <div className="border border-gray-300 rounded bg-white">
+              <SignatureCanvas
+                ref={signatureRef}
+                canvasProps={{
+                  width: 300,
+                  height: 100,
+                  className: 'signature-canvas w-full'
+                }}
+                backgroundColor="#ffffff"
+              />
+            </div>
+            
+            <div className="flex gap-2 mt-3">
+              <button
+                onClick={handleClearSignature}
+                className="flex-1 px-3 py-2 border border-gray-200 rounded text-sm hover:bg-gray-50"
+              >
+                Clear
+              </button>
+              <button
+                onClick={() => setShowSignature(false)}
+                className="flex-1 px-3 py-2 border border-gray-200 rounded text-sm hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveSignature}
+                className="flex-1 px-3 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        )}
+
+        {pcoSignature && !showSignature && (
+          <div className="border border-gray-200 rounded-lg p-3">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm font-medium text-gray-900">Signed by: {user?.name}</p>
+              <button
+                onClick={handleRemoveSignature}
+                className="text-xs text-red-600 hover:text-red-800"
+              >
+                Remove
+              </button>
+            </div>
+            <div className="border border-gray-200 rounded bg-gray-50 p-2">
+              <img 
+                src={pcoSignature} 
+                alt="PCO Signature" 
+                className="max-w-full h-auto"
+                style={{ maxHeight: '80px' }}
+              />
+            </div>
+            <button
+              onClick={() => setShowSignature(true)}
+              className="mt-2 text-xs text-blue-600 hover:text-blue-800"
+            >
+              Update Signature
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Workflow Steps Preview */}

@@ -478,6 +478,7 @@ export const useMobileStore = create<MobileStore>()(
             next_service_date: formatDateForMySQL(current.next_service_date || '', true), // Use today as default
             client_name: current.client_signature?.client_name || '',
             client_signature: current.client_signature?.signature_data || '',
+            pco_signature: current.pco_signature || '', // Add PCO signature
             
             // Map inspection stations to backend format
             stations: (current.inspection_stations || []).map(station => ({
@@ -503,8 +504,9 @@ export const useMobileStore = create<MobileStore>()(
             fumigation: {
               treated_areas: current.fumigation?.treated_areas || [],
               treated_for: current.fumigation?.target_pests || [],
-              insect_monitor_replaced: 0, // Default value, should be configurable in UI
+              insect_monitor_replaced: current.fumigation?.insect_monitor_replaced || 0,
               general_remarks: current.fumigation?.fumigation_notes || '',
+              insect_monitors: current.fumigation?.insect_monitors || [], // Add insect monitors
               chemicals: (current.fumigation?.chemicals_used || current.fumigation_chemicals || []).map(chemical => ({
                 chemical_id: chemical.chemical_id || chemical.id || 0,
                 quantity: parseFloat(chemical.quantity?.toString() || '0'),
@@ -564,6 +566,15 @@ export const useMobileStore = create<MobileStore>()(
             activity_type_length: s.activity_type?.length,
             activity_type_other: s.activity_type_other 
           })));
+          console.log('Fumigation insect monitors:', {
+            monitor_count: submissionData.fumigation.insect_monitors?.length || 0,
+            monitors: submissionData.fumigation.insect_monitors || [],
+            insect_monitor_replaced: submissionData.fumigation.insect_monitor_replaced
+          });
+          console.log('PCO Signature:', {
+            has_pco_signature: !!submissionData.pco_signature,
+            signature_length: submissionData.pco_signature?.length || 0
+          });
           console.log('=== END BACKEND DEBUG ===');
 
           const result = await mobileService.createReport(submissionData);

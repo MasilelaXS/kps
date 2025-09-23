@@ -117,6 +117,7 @@ export interface ReportData {
   report_types?: string[]; // Add for compatibility with existing code
   date_of_service: string;
   service_date?: string; // Alternative field name used in some components
+  pco_signature?: string; // Base64 signature image
   
   // Client info for display
   client?: {
@@ -147,6 +148,7 @@ export interface ReportData {
     fumigation_notes: string;
     insect_monitor_replaced?: number; // API field (0 or 1)
     general_remarks?: string; // API field
+    insect_monitors?: InsectMonitor[]; // Insect monitor data
   };
   fumigation_notes?: string; // Direct field used in components
   fumigation_chemicals?: FumigationChemical[]; // Alternative field name
@@ -186,6 +188,7 @@ export interface ReportSubmission {
   next_service_date: string;
   client_name: string;
   client_signature: string; // Base64 image data
+  pco_signature?: string; // Base64 image data
   
   // Inspection stations array (matches backend structure)
   stations: {
@@ -213,6 +216,7 @@ export interface ReportSubmission {
     treated_for: string[]; // JSON array
     insect_monitor_replaced: number; // 0 or 1
     general_remarks: string;
+    insect_monitors?: InsectMonitor[]; // Insect monitor data
     chemicals: {
       chemical_id: number;
       quantity: number; // float
@@ -261,6 +265,15 @@ export interface MobileState {
   chemicals: Chemical[];
   loading: boolean;
   error: string | null;
+}
+
+// Insect Monitor - matches API specification
+export interface InsectMonitor {
+  id?: number;
+  type: 'box' | 'light';
+  glue_board: string; // String values like "1", "2", "3", etc.
+  serviced: boolean;
+  tubes?: number; // Optional for light monitors
 }
 
 // Change password request
