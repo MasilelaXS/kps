@@ -558,12 +558,11 @@ export const InspectionStations: React.FC = () => {
                 <label className="block text-xs text-gray-500 mb-1">Bait Status</label>
                 <select
                   value={currentStation.bait_status}
-                  onChange={(e) => setCurrentStation(prev => ({ ...prev, bait_status: e.target.value as 'eaten' | 'partially_eaten' | 'untouched' | 'wet' }))}
+                  onChange={(e) => setCurrentStation(prev => ({ ...prev, bait_status: e.target.value as 'eaten' | 'clean' | 'wet' }))}
                   className="w-full p-2 border border-gray-200 rounded text-sm"
                 >
                   <option value="eaten">Eaten</option>
-                  <option value="partially_eaten">Partially Eaten</option>
-                  <option value="untouched">Untouched</option>
+                  <option value="clean">Clean</option>
                   <option value="wet">Wet</option>
                 </select>
               </div>

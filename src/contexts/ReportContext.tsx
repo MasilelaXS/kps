@@ -13,7 +13,7 @@ export interface InspectionStation {
   activity_type_other?: string;
   activity_description?: string;
   station_condition?: string[];
-  bait_status: 'eaten' | 'partially_eaten' | 'untouched' | 'wet';
+  bait_status: 'eaten' | 'clean' | 'wet';
   rodent_box_replaced: boolean;
   poison_used_id?: number;
   poison_quantity?: number;

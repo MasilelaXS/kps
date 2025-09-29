@@ -48,7 +48,7 @@ interface EditableStation {
   activity_type_other: string;
   activity_description: string;
   station_condition: string[];
-  bait_status: 'untouched' | 'partially_consumed' | 'fully_consumed' | 'wet' | 'missing';
+  bait_status: 'eaten' | 'clean' | 'wet';
   rodent_box_replaced: boolean;
   poison_used_id: number;
   poison_quantity: number;
@@ -96,11 +96,9 @@ const ACTIVITY_TYPES = [
 ];
 
 const BAIT_STATUS_OPTIONS = [
-  { key: 'untouched', label: 'Untouched' },
-  { key: 'partially_consumed', label: 'Partially Consumed' },
-  { key: 'fully_consumed', label: 'Fully Consumed' },
-  { key: 'wet', label: 'Wet' },
-  { key: 'missing', label: 'Missing' }
+  { key: 'clean', label: 'Clean' },
+  { key: 'eaten', label: 'Eaten' },
+  { key: 'wet', label: 'Wet' }
 ];
 
 export const ReportEdit: React.FC = () => {
@@ -305,7 +303,7 @@ export const ReportEdit: React.FC = () => {
       activity_type_other: '',
       activity_description: '',
       station_condition: ['good'],
-      bait_status: 'untouched',
+      bait_status: 'clean',
       rodent_box_replaced: false,
       poison_used_id: inspectionChemicals[0]?.id || 0,
       poison_quantity: 0,

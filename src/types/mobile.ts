@@ -73,7 +73,7 @@ export interface InspectionStation {
   activity_type_other?: string;
   activity_description?: string;
   station_condition?: string[]; // Array like ["good", "needs_repair", "damaged", "missing"]
-  bait_status: 'eaten' | 'partially_eaten' | 'untouched' | 'wet';
+  bait_status: 'eaten' | 'clean' | 'wet';
   rodent_box_replaced?: boolean;
   poison_used_id?: number; // Must be from GET /pco/chemicals with category "inspection" or "both"
   poison_quantity?: number;
@@ -201,7 +201,7 @@ export interface ReportSubmission {
     activity_type_other?: string;
     activity_description: string;
     station_condition: string[]; // Array: ["good", "needs_repair", "damaged", "missing"]
-    bait_status: 'eaten' | 'partially_eaten' | 'untouched' | 'wet';
+    bait_status: 'eaten' | 'clean' | 'wet';
     rodent_box_replaced: number; // 0 or 1
     poison_used_id: number;
     poison_quantity: number; // float
@@ -292,7 +292,7 @@ export interface Station {
   has_activity: 0 | 1;
   activity_type: 'droppings' | 'gnawing' | 'tracks' | 'other' | '';
   activity_description: string;
-  bait_status: 'eaten' | 'partially_eaten' | 'untouched' | 'wet';
+  bait_status: 'eaten' | 'clean' | 'wet';
   poison_used_id: number;
   poison_quantity: number;
   batch_number: string;

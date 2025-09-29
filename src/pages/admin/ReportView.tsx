@@ -206,11 +206,9 @@ export const ReportView: React.FC = () => {
 
   const getBaitStatusColor = (status: string) => {
     switch (status) {
-      case 'untouched': return 'success';
-      case 'partially_consumed': return 'warning';
-      case 'fully_consumed': return 'danger';
+      case 'clean': return 'success';
+      case 'eaten': return 'danger';
       case 'wet': return 'secondary';
-      case 'missing': return 'danger';
       default: return 'default';
     }
   };
